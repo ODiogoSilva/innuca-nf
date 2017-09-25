@@ -1,0 +1,10 @@
+work/
+.idea/
+.nextflow.log*
+.nextflow/
+dag_inuca.png
+data/
+logs/
+reports/
+timeline_inuca.html
+
