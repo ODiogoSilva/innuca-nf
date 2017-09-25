@@ -131,6 +131,7 @@ the output files of FastQC are sent to the output channel
 process fastqc {
 
     tag { fastq_id }
+    container 'odiogosilva/fastqc:0.11.5'
 
     input:
     set fastq_id, file(fastq_pair) from sample_good
@@ -201,4 +202,3 @@ process trimmomatic {
 
 }
 
-trimmomatic_processed.print{file(it[2]).text}
