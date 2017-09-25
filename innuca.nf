@@ -202,3 +202,4 @@ process trimmomatic {
 
 }
 
+println "$workflow.projectDir"
