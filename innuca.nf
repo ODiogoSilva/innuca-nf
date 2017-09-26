@@ -50,7 +50,7 @@ process integrity_coverage {
 	    file(fastq_pair),
 	    file('*_encoding'),
 	    file('*_phred'),
-	    file('*_coverage') into integrity
+	    file('*_coverage') into integrity_processed
 	file('*_report') into cov_report
 
 	script:
@@ -63,23 +63,25 @@ corrupted = Channel.create()
 sample_ok = Channel.create()
 
 // Corrupted samples have the 2nd value with 'Corrupt'
-integrity.choice(corrupted, sample_ok) {
+integrity_processed.choice(corrupted, sample_ok) {
     a -> a[2].text == "Corrupt" ? 0 : 1
 }
 
 // TRIAGE OF LOW COVERAGE SAMPLES
 sample_good = Channel.create()
+sample_listen = Channel.create()
 sample_phred = Channel.create()
 
 sample_ok
-// Low coverage samples have the 4th value of the Channel with 'None'
+// Low coverage samples have the 4th value of the Channel with 'fail'
     .filter{ it[4].text != "fail" }
 // For the channel to proceed with FastQ in 'sample_good' and the
 // Phred scores for each sample in 'sample_phred'
-    .separate(sample_good, sample_phred){
-        a -> [ [a[0], a[1]], [a[0], a[3].text] ]
+    .separate(sample_good, sample_listen, sample_phred){
+        a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3].text] ]
     }
 
+sample_listen.ifEmpty{ exit 1, "No samples left after checking FastQ integrity and estimating coverage. Exiting." }
 
 /** report_coverage
 This process will report the expected coverage for each non-corrupted sample
@@ -100,7 +102,6 @@ process report_coverage {
     echo 'Sample,Estimated coverage,Test' > estimated_coverage_initial.csv
     cat $report >> estimated_coverage_initial.csv
     """
-
 }
 
 /** report_corrupt
@@ -138,28 +139,15 @@ process fastqc {
     val ad from adapters
 
     output:
-    set fastq_id, file(fastq_pair), "fastq_status", file('pair_1*'), file('pair_2*') into fastqc_processed
+    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_listen, fastqc_processed
+    file "fastq_status" into fastqc_status
 
     script:
     template "fastqc.py"
 
 }
 
-// TRIAGE OF UNSUCCESSFUL FASTQC SAMPLE ANALYSES
-bad_fastqc = Channel.create()
-ok_fastqc = Channel.create()
-
-// Corrupted samples have the 2nd value with 'Corrupt'
-fastqc_processed.choice(bad_fastqc, ok_fastqc) {
-    a -> a[2].text == "pass" ? 1 : 0
-}
-
-// Prepare channel for processing of FastQC results
-fastqc_results = Channel.create()
-
-ok_fastqc
-        .map{ [it[0], it[1], it[3], it[4]] }
-        .into(fastqc_results)
+fastqc_listen.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }
 
 /** fastqc_report
 This process will parse the result files from a FastQC analyses and output
@@ -170,7 +158,7 @@ process fastqc_report {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_results
+    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed
 
     output:
     set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
@@ -203,9 +191,93 @@ process trimmomatic {
     val opts from trimmomatic_opts
 
     output:
-    set fastq_id, file(fastq_pair), "trimmomatic_status" into trimmomatic_processed
+    set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_listen, trimmomatic_processed
+    file "trimmomatic_status" into trimmomatic_status
 
    script:
    template "trimmomatic.py"
 
 }
+
+trimmomatic_listen.ifEmpty{ exit 1, "No samples left after running Trimmomatic. Exiting." }
+
+process integrity_coverage_2 {
+
+    tag { fastq_id }
+
+	input:
+	set fastq_id, file(fastq_pair) from trimmomatic_processed
+	val gsize from genome_size
+	val cov from min_coverage
+
+	output:
+	set fastq_id,
+	    file(fastq_pair),
+	    file('*_coverage') into integrity_processed_2
+	file('*_report') into cov_report_2
+
+	script:
+	template "integrity_coverage.py"
+}
+
+// Checking for coverage again after trimmomatic trimming.
+// Low coverage samples have the 2nd value of the Channel with 'fail'
+sample_good_2 = Channel.create()
+sample_listen_2 = Channel.create()
+
+integrity_processed_2
+// Low coverage samples have the 2nd value of the Channel with 'fail'
+    .filter{ it[2].text != "fail" }
+// For the channel to proceed with FastQ in 'sample_good' and the
+// Phred scores for each sample in 'sample_phred'
+    .separate(sample_good_2, sample_listen_2){
+        a -> [ [a[0], a[1]], [a[0], a[1]] ]
+    }
+
+sample_listen_2.ifEmpty{ exit 1, "No samples left after running second estimated coverage. Exiting." }
+
+
+/** report_coverage_2
+This process will report the expected coverage for each non-corrupted sample
+and write the results to 'reports/coverage/estimated_coverage_second.csv'
+*/
+process report_coverage_2 {
+
+    tag { report }
+    publishDir 'reports/coverage/'
+
+    input:
+    file(report) from cov_report_2.filter{ it.text != "Corrupt" }.collect()
+
+    output:
+    file 'estimated_coverage_second.csv'
+
+    """
+    echo 'Sample,Estimated coverage,Test' > estimated_coverage_second.csv
+    cat $report >> estimated_coverage_second.csv
+    """
+}
+
+
+/** fastqc_2
+This process will perform the second fastQC analysis for each sample.
+In this run, the output files of FastQC are sent to the output channel
+*/
+process fastqc {
+
+    tag { fastq_id }
+    container 'odiogosilva/fastqc:0.11.5'
+
+    input:
+    set fastq_id, file(fastq_pair) from sample_good_2
+    val ad from adapters
+
+    output:
+    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_listen_2, fastqc_processed_2
+    file "fastq_status" into fastqc_status_2
+
+    script:
+    template "fastqc.py"
+}
+
+fastqc_listen_2.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }

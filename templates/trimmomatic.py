@@ -73,9 +73,9 @@ def main():
 
     # Add output file names
     output_names = []
-    for fastq in FASTQ_PAIR:
-        output_names.append("{}_P.fastq.gz".format(fastq.split(".")[0]))
-        output_names.append("{}_U.fastq.gz".format(fastq.split(".")[0]))
+    for i in range(len(FASTQ_PAIR)):
+        output_names.append("{}_{}_P.fastq.gz".format(FASTQ_ID, str(i + 1)))
+        output_names.append("{}_{}_U.fastq.gz".format(FASTQ_ID, str(i + 1)))
     cli += output_names
 
     # Add trimmomatic options
