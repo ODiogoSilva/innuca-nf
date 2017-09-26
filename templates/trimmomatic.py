@@ -53,6 +53,8 @@ def main():
         "-jar",
         TRIM_PATH.strip(),
         "PE",
+        "-threads",
+        "1"
     ]
 
     # If the phred encoding was detected, provide it

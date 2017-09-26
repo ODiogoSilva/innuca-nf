@@ -83,7 +83,7 @@ def main():
         "--format",
         "fastq",
         "--threads",
-        "2"
+        "1"
     ]
 
     # Add adapters file to command line, if it exists
