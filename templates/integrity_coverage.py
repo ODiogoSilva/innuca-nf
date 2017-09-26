@@ -44,15 +44,11 @@ In case of a corrupted sample, all expected output files should have
 
 """
 
-from itertools import chain
+import bz2
+import gzip
+import zipfile
 
-# Add the base library containing common functions
-try:
-    import base
-except ImportError:
-    import sys
-    sys.path.insert(0, '../../../templates/')
-    import base
+from itertools import chain
 
 # CONSTANTS
 FASTQ_PAIR = '$fastq_pair'.split()
@@ -67,6 +63,42 @@ RANGES = {
     'Illumina-1.3': [64, (64, 104)],
     'Illumina-1.5': [64, (67, 104)]
 }
+
+COPEN = {
+    "gz": gzip.open,
+    "bz2": bz2.open,
+    "zip": zipfile.ZipFile
+}
+
+
+def guess_file_compression(file_path):
+    """
+
+    Parameters
+    ----------
+    file_path
+
+    Returns
+    -------
+
+    """
+
+    magic_dict = {
+        b"\\x1f\\x8b\\x08": "gz",
+        b"\\x42\\x5a\\x68": "bz2",
+        b"\\x50\\x4b\\x03\\x04": "zip"
+    }
+
+    max_len = max(len(x) for x in magic_dict)
+
+    with open(file_path, "rb") as f:
+        file_start = f.read(max_len)
+
+    for magic, file_type in magic_dict.items():
+        if file_start.startswith(magic):
+            return file_type
+
+    return None
 
 
 def get_qual_range(qual_str):
@@ -122,6 +154,7 @@ def main():
     # Information for encoding guess
     gmin, gmax = 99, 0
     encoding = []
+    phred = None
 
     # Information for coverage estimation
     chars = 0
@@ -129,12 +162,12 @@ def main():
     # Get compression of each FastQ pair file
     file_objects = []
     for fastq in FASTQ_PAIR:
-        ftype = base.guess_file_compression(fastq)
+        ftype = guess_file_compression(fastq)
 
         # This can guess the compression of gz, bz2 and zip. If it cannot
         # find the compression type, it tries to open a regular file
         if ftype:
-            file_objects.append(base.copen[ftype](fastq, "rt"))
+            file_objects.append(COPEN[ftype](fastq, "rt"))
         else:
             file_objects.append(open(fastq))
 
@@ -188,13 +221,13 @@ def main():
             # Estimate coverage
             exp_coverage = round(chars / (GSIZE * 1000000), 1)
             if exp_coverage >= MINIMUM_COVERAGE:
-                cov_rep.write("{},{},{}\\n".format(FASTQ_ID, str(exp_coverage),
-                                                  "PASS"))
+                cov_rep.write("{},{},{}\\n".format(
+                    FASTQ_ID, str(exp_coverage), "PASS"))
                 cov_fh.write(str(exp_coverage))
             # Estimated coverage does not pass minimum threshold
             else:
-                cov_rep.write("{},{},{}\\n".format(FASTQ_ID, str(exp_coverage),
-                                                  "FAIL"))
+                cov_rep.write("{},{},{}\\n".format(
+                    FASTQ_ID, str(exp_coverage), "FAIL"))
                 cov_fh.write("fail")
 
         # This exception is raised when the input FastQ files are corrupted
