@@ -24,6 +24,9 @@ Generated output
 
 """
 
+from collections import OrderedDict
+
+
 RESULT_P1 = '$result_p1'.split()
 RESULT_P2 = '$result_p2'.split()
 FASTQ_ID = '$fastq_id'
@@ -142,14 +145,114 @@ def get_sample_trim(p1_data, p2_data):
     return optimal_5trim, optimal_3trim
 
 
+def get_summary(summary_file):
+    """
+
+    Parameters
+    ----------
+    summary_file
+
+    Returns
+    -------
+
+    """
+
+    summary_info = OrderedDict()
+
+    with open(summary_file) as fh:
+        for line in fh:
+            # Skip empty lines
+            if not line.strip():
+                continue
+            # Populate summary info
+            fields = [x.strip() for x in line.split("\t")]
+            summary_info[fields[1]] = fields[0]
+
+    return summary_info
+
+
+def check_summary_health(summary_file):
+    """Checks the health of a sample from the FastQC summary file.
+
+    Parses the FastQC summary file and tests whether the sample is good
+    or not. There are four categories that cannot fail, and two that
+    must pass in order to the sample pass this check
+
+    Parameters
+    ----------
+    summary_file: str
+        Path to FastQC summary file
+
+    Returns
+    -------
+    _ : Boolean
+        Returns True if the sample passes all tests. False if not.
+    summary_info : dict
+        A dictionary with the FastQC results for each category.
+
+    """
+
+    # Store the summary categories that cannot fail. If they fail, do not
+    # proceed with this sample
+    fail_sensitive = [
+        "Per base sequence quality",
+        "Overrepresented sequences",
+        "Sequence Length Distribution",
+        "Per sequence GC content"
+    ]
+
+    # Store summary categories that must pass. If they do not, do not proceed
+    # with that sample
+    must_pass = [
+        "Per base N content",
+        "Adapter Content"
+    ]
+
+    # Get summary dictionary
+    summary_info = get_summary(summary_file)
+
+    for cat, test in summary_info.items():
+
+        # Check for fail sensitive
+        if cat in fail_sensitive and test == "FAIL":
+            return False, summary_info
+
+        # Check for must pass
+        if cat in must_pass and test != "PASS":
+            return False, summary_info
+
+    # Passed all tests
+    return True, summary_info
+
+
 def main():
 
-    # Get optimal trimming range for sample, based on the per base sequence
-    # content
-    optimal_trim = get_sample_trim(RESULT_P1[0], RESULT_P2[0])
+    with open("fastqc_health", "w") as health_fh, \
+            open("optimal_trim", "w") as trim_fh:
 
-    with open("optimal_trim", "w") as fh:
-        fh.write("{}".format(" ".join([str(x) for x in optimal_trim])))
+        # Perform health check according to the FastQC summary report for
+        # each pair. If both pairs pass the check, send the 'pass' information
+        # to the 'fastqc_health' channel. If at least one fails, send the
+        # summary report.
+        for fastqc_summary in [RESULT_P1[1], RESULT_P2[1]]:
+
+            health, summary_info = check_summary_health(fastqc_summary)
+
+            # If one of the health flags returns False, send the summary report
+            # through the status channel
+            if not health:
+                for k, v in summary_info.items():
+                    health_fh.write("{}: {}\\n".format(k, v))
+                    trim_fh.write("fail")
+                return
+            else:
+                health_fh.write("pass")
+
+        # Get optimal trimming range for sample, based on the per base sequence
+        # content
+        optimal_trim = get_sample_trim(RESULT_P1[0], RESULT_P2[0])
+
+        trim_fh.write("{}".format(" ".join([str(x) for x in optimal_trim])))
 
 
 main()

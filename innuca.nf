@@ -18,19 +18,19 @@ fastq_raw = Channel.fromFilePairs(params.fastq_files)
 
 // Channel for expected genome size
 genome_size = Channel
-                .from([params.genome_size] * nsamples)
+                .value(params.genome_size)
 // Channel for minimum coverage threshold
 min_coverage = Channel
-                .from([params.min_coverage] * nsamples)
+                .value(params.min_coverage)
 // Channel for adapters file
 adapters = Channel
-                .from(["None"] * nsamples)
+                .value("None")
 // Channels for Trimmomatic options
 trimmomatic_opts = Channel
-                .from([[params.trim_sliding_window,
-                       params.trim_leading,
-                       params.trim_trailing,
-                       params.tim_min_length]] * nsamples)
+                .value([params.trim_sliding_window,
+                        params.trim_leading,
+                        params.trim_trailing,
+                        params.tim_min_length])
 
 /** integrity_coverage
 This process will check the integrity, encoding and get the estimated
@@ -173,14 +173,21 @@ process fastqc_report {
     set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_results
 
     output:
-    set fastq_id, file(fastq_pair), 'optimal_trim' into fastqc_trim
+    set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
 
     script:
     template "fastqc_report.py"
 
 }
 
-//fastqc_trim.phase(sample_phred).view()
+// Triage of samples with bad health
+fail_fastqc_report = Channel.create()
+pass_fastqc_report = Channel.create()
+
+fastqc_trim.choice(fail_fastqc_report, pass_fastqc_report) {
+    a -> a[2].text == "pass" ? 0 : 1
+}
+
 
 /** trimmomatic
 This process will execute trimmomatic
@@ -188,10 +195,11 @@ This process will execute trimmomatic
 process trimmomatic {
 
     tag { fastq_id }
+    cpus 1
     container 'odiogosilva/trimmomatic'
 
     input:
-    set fastq_id, file(fastq_pair), trim_range, phred from fastqc_trim.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][2]).text, it[1][1]] }
+    set fastq_id, file(fastq_pair), trim_range, phred from pass_fastqc_report.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
     val opts from trimmomatic_opts
 
     output:
@@ -201,5 +209,3 @@ process trimmomatic {
    template "trimmomatic.py"
 
 }
-
-println "$workflow.projectDir"
