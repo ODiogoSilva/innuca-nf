@@ -26,15 +26,21 @@ cov: Minimum coverage threshold
 Generated output
 ---------------
 
-'[fastq_id]_encoding' : Stores the encoding for the sample FastQ. If no
+'${fastq_id}_encoding' : Stores the encoding for the sample FastQ. If no
     encoding could be guessed, write 'None' to file.
-'[fastq_id]_phred' : Stores the phred value for the sample FastQ. If no
+    .: 'Illumina-1.8' or 'None'
+'${fastq_id}_phred' : Stores the phred value for the sample FastQ. If no
     phred could be guessed, write 'None' to file.
-'[fastq_id]_coverage' : Stores the expected coverage of the samples,
+    .: '33' or 'None'
+'${fastq_id}_coverage' : Stores the expected coverage of the samples,
     based on a given genome size.
-'[fastq_id]_report' : Stores the report on the expected coverage
+    .: '112' or 'fail'
+'${fastq_id}_report' : Stores the report on the expected coverage
     estimation. This string written in this file will appear in the
     coverage report.
+    .: '${fastq_id}, 112, PASS'
+'${fastq_id}_max_len : Stores the maximum read length for the current sample
+    .: '152'
 
 Note
 ----
@@ -159,6 +165,9 @@ def main():
     # Information for coverage estimation
     chars = 0
 
+    # Information on maximum read length
+    max_read_length = 0
+
     # Get compression of each FastQ pair file
     file_objects = []
     for fastq in FASTQ_PAIR:
@@ -174,7 +183,8 @@ def main():
     with open("{}_encoding".format(FASTQ_ID), "w") as enc_fh, \
             open("{}_phred".format(FASTQ_ID), "w") as phred_fh, \
             open("{}_coverage".format(FASTQ_ID), "w") as cov_fh, \
-            open("{}_report".format(FASTQ_ID), "w") as cov_rep:
+            open("{}_report".format(FASTQ_ID), "w") as cov_rep, \
+            open("{}_max_len".format(FASTQ_ID), "w") as len_fh:
 
         try:
             # Iterate over both pair files sequentially using itertools.chain
@@ -197,7 +207,12 @@ def main():
                 # Parse only every 2nd line of the file for the coverage
                 # e.g.: GGATAATCTACCTTGACGATTTGTACTGGCGTTGGTTTCTTA (...)
                 if (i + 3) % 4 == 0:
-                    chars += len(line.strip())
+                    read_len = len(line.strip())
+                    chars += read_len
+
+                    # Evaluate maximum read length for sample
+                    if read_len > max_read_length:
+                        max_read_length = read_len
 
             # End of FastQ parsing
 
@@ -229,6 +244,9 @@ def main():
                 cov_rep.write("{},{},{}\\n".format(
                     FASTQ_ID, str(exp_coverage), "FAIL"))
                 cov_fh.write("fail")
+
+            # Maximum read length
+            len_fh.write("{}".format(max_read_length))
 
         # This exception is raised when the input FastQ files are corrupted
         except EOFError:

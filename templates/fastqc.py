@@ -18,8 +18,10 @@ fastq_pair: Pair of FastQ file paths
 
 Generated output
 ----------------
-
-
+pair_[1,2]_data: File containing FastQC report at the nucleotide level
+    .: 'pair_1_data'
+pair_[1,2]_summary: File containing FastQC report for each category
+    .: 'pair_1_summary'
 """
 
 import os

@@ -144,7 +144,6 @@ process fastqc {
 
     script:
     template "fastqc.py"
-
 }
 
 fastqc_listen.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }

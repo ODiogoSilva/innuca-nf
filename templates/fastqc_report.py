@@ -14,13 +14,19 @@ Expected input
 fastq_id: Sample Identification string
     .: 'SampleA'
 result_p1: Path to FastQC result files for pair 1
-    .: 'SampleA_1_fastqc/summary.txt', 'SampleA_1_fastqc/fastqc_data.txt'
+    .: 'SampleA_1_fastqc/data', 'SampleA_1_fastqc/summary'
 result_p2 Path to FastQC result files for pair 2
-    .: 'SampleA_2_fastqc/summary.txt', 'SampleA_2_fastqc/fastqc_data.txt'
+    .: 'SampleA_2_fastqc/data', 'SampleA_2_fastqc/summary'
 
 Generated output
 ----------------
-
+fastqc_health: Stores the health check for the current sample. If it passes
+    all checks, it contains only the string 'pass'. Otherwise, contains
+    the summary categories and their respective results
+    .: 'pass'
+optimal_trim: Stores a tuple with the optimal trimming positions for 5' and
+    3' ends of the reads.
+    .: '15 151'
 
 """
 
