@@ -21,6 +21,12 @@ trimmomatic_opts = Channel
                         params.trim_trailing,
                         params.tim_min_length])
 
+spades_opts = Channel
+                .value([params.spades_min_coverage,
+                        params.spades_min_kmer_coverage])
+spades_kmers = Channel
+                .value(params.spades_kmers)
+
 /** integrity_coverage
 This process will check the integrity, encoding and get the estimated
 coverage for each FastQ pair
@@ -276,9 +282,18 @@ process spades {
 
     input:
     set fastq_id, file(fastq_pair), max_len from fastqc_processed_2.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
+    val opts from spades_opts
+    val kmers from spades_kmers
 
-    """
-    echo $fastq_id, $fastq_pair, $max_len
-    """
+    output:
+    set fastq_pair, file('contigs.fasta') optional true into spades_listen, spades_processed
+    file "spades_status" into spades_status
+
+    script:
+    template "spades.py"
 
 }
+
+
+spades_listen.ifEmpty{ exit 1, "No samples left after running Spades. Exiting." }
+
