@@ -1,16 +1,5 @@
 #!/usr/bin/nextflow
 
-// PARAMETERS //
-// These can be defined when executing the script
-params.fastq_files = "data/*_{1,2}.*"
-params.genome_size = 2.1
-params.min_coverage = 15
-// Trimmomatic
-params.trim_sliding_window = '5:20'
-params.trim_leading = '3'
-params.trim_trailing = '3'
-params.tim_min_length = '55'
-
 // SETTING CHANNELS //
 nsamples = file(params.fastq_files).size()
 // Channel for FastQ files
@@ -132,7 +121,6 @@ the output files of FastQC are sent to the output channel
 process fastqc {
 
     tag { fastq_id }
-    container 'odiogosilva/fastqc:0.11.5'
 
     input:
     set fastq_id, file(fastq_pair) from sample_good
@@ -183,7 +171,6 @@ process trimmomatic {
 
     tag { fastq_id }
     cpus 1
-    container 'odiogosilva/trimmomatic'
 
     input:
     set fastq_id, file(fastq_pair), trim_range, phred from pass_fastqc_report.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
@@ -212,7 +199,8 @@ process integrity_coverage_2 {
 	output:
 	set fastq_id,
 	    file(fastq_pair),
-	    file('*_coverage') into integrity_processed_2
+	    file('*_coverage'),
+	    file('*_max_len') into integrity_processed_2
 	file('*_report') into cov_report_2
 
 	script:
@@ -222,6 +210,7 @@ process integrity_coverage_2 {
 // Checking for coverage again after trimmomatic trimming.
 // Low coverage samples have the 2nd value of the Channel with 'fail'
 sample_good_2 = Channel.create()
+sample_max_len = Channel.create()
 sample_listen_2 = Channel.create()
 
 integrity_processed_2
@@ -229,8 +218,8 @@ integrity_processed_2
     .filter{ it[2].text != "fail" }
 // For the channel to proceed with FastQ in 'sample_good' and the
 // Phred scores for each sample in 'sample_phred'
-    .separate(sample_good_2, sample_listen_2){
-        a -> [ [a[0], a[1]], [a[0], a[1]] ]
+    .separate(sample_good_2, sample_listen_2, sample_max_len){
+        a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3]]]
     }
 
 sample_listen_2.ifEmpty{ exit 1, "No samples left after running second estimated coverage. Exiting." }
@@ -265,7 +254,6 @@ In this run, the output files of FastQC are sent to the output channel
 process fastqc {
 
     tag { fastq_id }
-    container 'odiogosilva/fastqc:0.11.5'
 
     input:
     set fastq_id, file(fastq_pair) from sample_good_2
@@ -280,3 +268,17 @@ process fastqc {
 }
 
 fastqc_listen_2.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }
+
+
+process spades {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(fastq_pair), max_len from fastqc_processed_2.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
+
+    """
+    echo $fastq_id, $fastq_pair, $max_len
+    """
+
+}
