@@ -25,7 +25,12 @@ opts: List of options for spades execution.
 
 Generated output
 ----------------
-
+contigs.fasta : Main output of spades with the assembly
+    .: 'contigs.fasta'
+spades_status :  Stores the status of the spades run. If it was
+    successfully executed, it stores 'pass'. Otherwise, it stores the STDERR
+    message.
+    .: 'pass'
 
 """
 
