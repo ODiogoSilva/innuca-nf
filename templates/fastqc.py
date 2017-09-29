@@ -28,7 +28,7 @@ import os
 import subprocess
 
 from subprocess import PIPE
-from os.path import exists, splitext, join
+from os.path import exists, join
 
 FASTQ_PAIR = '$fastq_pair'.split()
 FASTQ_ID = '$fastq_id'
@@ -40,7 +40,7 @@ def convert_adatpers(adapter_fasta):
 
     Parameters
     ----------
-    adapter_file : str
+    adapter_fasta : str
         Path to Fasta file with adapter sequences
 
     Returns
@@ -123,5 +123,6 @@ def main():
 
         os.rename(fastqc_data_file, "pair_{}_data".format(i + 1))
         os.rename(summary_file, "pair_{}_summary".format(i + 1))
+
 
 main()

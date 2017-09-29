@@ -117,7 +117,7 @@ def trim_range(data_file):
 
     # Split biased list in half to get the 5' and 3' ends
     biased_5end, biased_3end = biased[:int(len(biased))],\
-                               biased[int(len(biased)):][::-1]
+        biased[int(len(biased)):][::-1]
 
     trim_nt = [0, 0]
     # Assess number of nucleotides to clip at 5' end

@@ -338,9 +338,8 @@ class Assembly:
             for contig_id, contig in self.contigs.items():
                 if contig_id not in self.filtered_ids and filtered:
                     fh.write(">{}_{}\\n{}\\n".format(self.sample,
-                                                   contig["header"],
-                                                   contig["sequence"]))
-
+                                                     contig["header"],
+                                                     contig["sequence"]))
 
     def write_report(self, output_file):
         """Writes a report with the test results for the current assembly

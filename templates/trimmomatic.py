@@ -33,9 +33,9 @@ trimmomatic_status: Stores the status of the trimmomatic run. If it was
 
 """
 
-#TODO: More control over read trimming
-#TODO: Add option to remove adapters
-#TODO: What to do when there is encoding failure
+# TODO: More control over read trimming
+# TODO: Add option to remove adapters
+# TODO: What to do when there is encoding failure
 
 import subprocess
 
@@ -105,5 +105,6 @@ def main():
             return
         else:
             fh.write("pass")
+
 
 main()
