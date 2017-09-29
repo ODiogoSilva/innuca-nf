@@ -27,6 +27,10 @@ spades_opts = Channel
 spades_kmers = Channel
                 .value(params.spades_kmers)
 
+process_spades_opts = Channel
+                .value([params.spades_min_contig_len,
+                        params.spades_min_kmer_coverage])
+
 /** integrity_coverage
 This process will check the integrity, encoding and get the estimated
 coverage for each FastQ pair
@@ -286,7 +290,7 @@ process spades {
     val kmers from spades_kmers
 
     output:
-    set fastq_pair, file('contigs.fasta') optional true into spades_listen, spades_processed
+    set fastq_id, file('contigs.fasta') optional true into spades_listen, spades_processed
     file "spades_status" into spades_status
 
     script:
@@ -294,6 +298,19 @@ process spades {
 
 }
 
-
 spades_listen.ifEmpty{ exit 1, "No samples left after running Spades. Exiting." }
 
+
+process process_spades {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly) from spades_processed
+    val opts from process_spades_opts
+    val gsize from genome_size
+
+    script:
+    template "process_spades.py"
+
+}
