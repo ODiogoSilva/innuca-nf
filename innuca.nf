@@ -20,7 +20,7 @@ trimmomatic_opts = Channel
                         params.trim_leading,
                         params.trim_trailing,
                         params.tim_min_length])
-
+// Channels for Spades
 spades_opts = Channel
                 .value([params.spades_min_coverage,
                         params.spades_min_kmer_coverage])
@@ -30,6 +30,9 @@ spades_kmers = Channel
 process_spades_opts = Channel
                 .value([params.spades_min_contig_len,
                         params.spades_min_kmer_coverage])
+// Channels for process assembly mapping
+assembly_mapping_opts = Channel
+                .value(params.min_assembly_coverage)
 
 /** integrity_coverage
 This process will check the integrity, encoding and get the estimated
@@ -187,7 +190,7 @@ process trimmomatic {
     val opts from trimmomatic_opts
 
     output:
-    set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_listen, trimmomatic_processed
+    set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_listen, trimmomatic_processed, bowtie_input
     file "trimmomatic_status" into trimmomatic_status
 
    script:
@@ -310,7 +313,57 @@ process process_spades {
     val opts from process_spades_opts
     val gsize from genome_size
 
+    output:
+    set fastq_id, file('*.assembly.fasta') into spades_assembly
+    file '*.report.fasta' into spades_report
+
     script:
     template "process_spades.py"
+
+}
+
+// Merge the bowtie_input channel from Trimmomatic with the processed FastQ
+// files and the spades assembly file.
+// The resulting channel will consist of:
+// fastq_id, fastq_1, fastq_2, assembly_file
+assembly_mapping_input = Channel.create()
+bowtie_input
+        .phase(spades_assembly)
+        .map{ [it[0][0], it[0][1][0], it[0][1][1], it[1][1]] }
+        .into(assembly_mapping_input)
+
+
+process assembly_mapping {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(fastq_1), file(fastq_2), file(assembly) from assembly_mapping_input
+
+    output:
+    set fastq_id, file(assembly), 'coverages.tsv' into mapping_coverage
+
+    """
+    bowtie2-build --threads ${task.cpus} $assembly genome_index
+    bowtie2 -q --very-sensitive-local --threads ${task.cpus} -x genome_index -1 $fastq_1 -2 $fastq_2 -S mapping.sam
+    samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam
+    samtools index sorted.bam
+    parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
+    parallel -j ${task.cpus} echo -n {} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
+    rm *.tab
+    """
+}
+
+
+process process_assembly_mapping {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly), file(coverage) from mapping_coverage
+    val min_assembly_coverage from assembly_mapping_opts
+
+    script:
+    template "process_assembly_mapping.py"
 
 }
