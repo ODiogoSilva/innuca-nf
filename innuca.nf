@@ -99,13 +99,12 @@ process report_coverage {
     publishDir 'reports/coverage/'
 
     input:
-    file(report) from cov_report.filter{ it.text != "Corrupt" }.collect()
+    file(report) from cov_report.filter{ it.text != "Corrupt" }
 
     output:
     file 'estimated_coverage_initial.csv'
 
     """
-    echo 'Sample,Estimated coverage,Test' > estimated_coverage_initial.csv
     cat $report >> estimated_coverage_initial.csv
     """
 }
@@ -259,13 +258,12 @@ process report_coverage_2 {
     publishDir 'reports/coverage/'
 
     input:
-    file(report) from cov_report_2.filter{ it.text != "Corrupt" }.collect()
+    file(report) from cov_report_2.filter{ it.text != "Corrupt" }
 
     output:
     file 'estimated_coverage_second.csv'
 
     """
-    echo 'Sample,Estimated coverage,Test' > estimated_coverage_second.csv
     cat $report >> estimated_coverage_second.csv
     """
 }
