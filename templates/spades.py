@@ -95,7 +95,7 @@ def main():
         "--careful",
         "--only-assembler",
         "--threads",
-        "1",
+        "$task.cpus",
         "--cov-cutoff",
         min_coverage,
         "-o",

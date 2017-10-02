@@ -85,7 +85,7 @@ def main():
         "--format",
         "fastq",
         "--threads",
-        "1"
+        "$task.cpus"
     ]
 
     # Add adapters file to command line, if it exists

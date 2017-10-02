@@ -41,6 +41,8 @@ coverage for each FastQ pair
 process integrity_coverage {
 
     tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
 
 	input:
 	set fastq_id, file(fastq_pair) from fastq_raw
@@ -91,7 +93,8 @@ and write the results to 'reports/coverage/estimated_coverage_initial.csv'
 */
 process report_coverage {
 
-    tag { report }
+    // This process can only use a single CPU
+    cpus 1
     publishDir 'reports/coverage/'
 
     input:
@@ -113,6 +116,8 @@ This process will report the corrupted samples and write the results to
 process report_corrupt {
 
     tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
     publishDir 'reports/corrupted/'
 
     input:
@@ -156,6 +161,8 @@ the optimal_trim information for Trimmomatic
 process fastqc_report {
 
     tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
 
     input:
     set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed
@@ -183,7 +190,6 @@ This process will execute trimmomatic
 process trimmomatic {
 
     tag { fastq_id }
-    cpus 1
 
     input:
     set fastq_id, file(fastq_pair), trim_range, phred from pass_fastqc_report.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
@@ -193,8 +199,8 @@ process trimmomatic {
     set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_listen, trimmomatic_processed, bowtie_input
     file "trimmomatic_status" into trimmomatic_status
 
-   script:
-   template "trimmomatic.py"
+    script:
+    template "trimmomatic.py"
 
 }
 
@@ -203,6 +209,7 @@ trimmomatic_listen.ifEmpty{ exit 1, "No samples left after running Trimmomatic. 
 process integrity_coverage_2 {
 
     tag { fastq_id }
+    cpus 1
 
 	input:
 	set fastq_id, file(fastq_pair) from trimmomatic_processed
@@ -245,6 +252,8 @@ and write the results to 'reports/coverage/estimated_coverage_second.csv'
 process report_coverage_2 {
 
     tag { report }
+    // This process can only use a single CPU
+    cpus 1
     publishDir 'reports/coverage/'
 
     input:
@@ -307,6 +316,8 @@ spades_listen.ifEmpty{ exit 1, "No samples left after running Spades. Exiting." 
 process process_spades {
 
     tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
 
     input:
     set fastq_id, file(assembly) from spades_processed
@@ -359,6 +370,8 @@ process assembly_mapping {
 process process_assembly_mapping {
 
     tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
 
     input:
     set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from mapping_coverage
@@ -387,7 +400,7 @@ process pilon {
 
 
     """
-    java -jar /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf
+    java -jar /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf --threads $task.cpus
     """
 
 }
@@ -396,6 +409,8 @@ process pilon {
 process mlst {
 
     tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
 
     input:
     set fastq_id, file(assembly) from pilon_processed
