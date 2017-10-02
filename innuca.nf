@@ -336,12 +336,13 @@ bowtie_input
 process assembly_mapping {
 
     tag { fastq_id }
+    echo false
 
     input:
     set fastq_id, file(fastq_1), file(fastq_2), file(assembly) from assembly_mapping_input
 
     output:
-    set fastq_id, file(assembly), 'coverages.tsv' into mapping_coverage
+    set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' into mapping_coverage
 
     """
     bowtie2-build --threads ${task.cpus} $assembly genome_index
@@ -349,7 +350,7 @@ process assembly_mapping {
     samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam
     samtools index sorted.bam
     parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
-    parallel -j ${task.cpus} echo -n {} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
+    parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
     rm *.tab
     """
 }
@@ -360,10 +361,29 @@ process process_assembly_mapping {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(assembly), file(coverage) from mapping_coverage
+    set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from mapping_coverage
     val min_assembly_coverage from assembly_mapping_opts
+    val gsize from genome_size
+
+    output:
+    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam' into processed_assembly_mapping
 
     script:
     template "process_assembly_mapping.py"
+
+}
+
+
+process pilon {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly), file(bam_file) from processed_assembly_mapping
+
+
+    """
+    java -jar /NGStools/pilon-1.22.jar
+    """
 
 }
