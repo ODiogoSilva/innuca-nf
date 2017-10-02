@@ -154,6 +154,17 @@ def filter_bam(coverage_info, bam_file, min_coverage, output_bam):
     p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
     stdout, stderr = p.communicate()
 
+    if not p.returncode:
+        # Create index
+        cli = [
+            "samtools",
+            "index",
+            output_bam
+        ]
+
+        p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
+        stdout, stderr = p.communicate()
+
 
 def check_filtered_assembly(coverage_info, minimum_coverage, genome_size):
     """

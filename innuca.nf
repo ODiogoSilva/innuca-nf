@@ -366,7 +366,7 @@ process process_assembly_mapping {
     val gsize from genome_size
 
     output:
-    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam' into processed_assembly_mapping
+    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' into processed_assembly_mapping
 
     script:
     template "process_assembly_mapping.py"
@@ -377,13 +377,14 @@ process process_assembly_mapping {
 process pilon {
 
     tag { fastq_id }
+    echo false
 
     input:
-    set fastq_id, file(assembly), file(bam_file) from processed_assembly_mapping
+    set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping
 
 
     """
-    java -jar /NGStools/pilon-1.22.jar
+    java -jar /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf
     """
 
 }
