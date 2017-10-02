@@ -382,9 +382,26 @@ process pilon {
     input:
     set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping
 
+    output:
+    set fastq_id, '*_polished.assembly.fasta' into pilon_processed
+
 
     """
     java -jar /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf
+    """
+
+}
+
+
+process mlst {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly) from pilon_processed
+
+    """
+    mlst $assembly
     """
 
 }
