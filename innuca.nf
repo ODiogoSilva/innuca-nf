@@ -48,6 +48,7 @@ process integrity_coverage {
 	set fastq_id, file(fastq_pair) from fastq_raw
 	val gsize from genome_size
 	val cov from min_coverage
+	val opts from Channel.value('')
 
 	output:
 	set fastq_id,
@@ -215,6 +216,8 @@ process integrity_coverage_2 {
 	set fastq_id, file(fastq_pair) from trimmomatic_processed
 	val gsize from genome_size
 	val cov from min_coverage
+	// Use -e option for skipping encoding guess
+	val opts from Channel.value('-e')
 
 	output:
 	set fastq_id,
@@ -251,7 +254,6 @@ and write the results to 'reports/coverage/estimated_coverage_second.csv'
 */
 process report_coverage_2 {
 
-    tag { report }
     // This process can only use a single CPU
     cpus 1
     publishDir 'reports/coverage/'
@@ -391,6 +393,7 @@ process pilon {
 
     tag { fastq_id }
     echo false
+    publishDir 'assemblies/', mode: 'copy'
 
     input:
     set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping

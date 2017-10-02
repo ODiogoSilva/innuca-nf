@@ -61,6 +61,7 @@ FASTQ_PAIR = '$fastq_pair'.split()
 FASTQ_ID = '$fastq_id'
 GSIZE = float('$gsize')
 MINIMUM_COVERAGE = float('$cov')
+OPTS = '$opts'
 
 RANGES = {
     'Sanger': [33, (33, 73)],
@@ -157,6 +158,12 @@ def get_encodings_in_range(rmin, rmax, ranges=RANGES):
 
 def main():
 
+    # Check for runtime options
+    if "-e" in OPTS:
+        skip_encoding = True
+    else:
+        skip_encoding = False
+
     # Information for encoding guess
     gmin, gmax = 99, 0
     encoding = []
@@ -192,7 +199,7 @@ def main():
 
                 # Parse only every 4th line of the file for the encoding
                 # e.g.: AAAA/EEEEEEEEEEE<EEEEEEEEEEEEEEEEEEEEEEEEE (...)
-                if (i + 1) % 4 == 0:
+                if (i + 1) % 4 == 0 and not skip_encoding:
                     # It is important to strip() the line so that any newline
                     # character is removed and not accounted for in the
                     # encoding guess
