@@ -4,7 +4,6 @@
 nsamples = file(params.fastq_files).size()
 // Channel for FastQ files
 fastq_raw = Channel.fromFilePairs(params.fastq_files)
-
 // Channel for expected genome size
 genome_size = Channel
                 .value(params.genome_size)
@@ -36,7 +35,8 @@ assembly_mapping_opts = Channel
 
 /** integrity_coverage
 This process will check the integrity, encoding and get the estimated
-coverage for each FastQ pair
+coverage for each FastQ pair. Corrupted FastQ files will also be detected
+and filtered here.
 */
 process integrity_coverage {
 
@@ -48,6 +48,8 @@ process integrity_coverage {
 	set fastq_id, file(fastq_pair) from fastq_raw
 	val gsize from genome_size
 	val cov from min_coverage
+	// This channel is for the custom options of the integrity_coverage.py
+	// script. See the script's documentation for more information.
 	val opts from Channel.value('')
 
 	output:
@@ -69,7 +71,7 @@ sample_ok = Channel.create()
 
 // Corrupted samples have the 2nd value with 'Corrupt'
 integrity_processed.choice(corrupted, sample_ok) {
-    a -> a[2].text == "Corrupt" ? 0 : 1
+    a -> a[2].text == "corrupt" ? 0 : 1
 }
 
 // TRIAGE OF LOW COVERAGE SAMPLES

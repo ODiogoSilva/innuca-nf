@@ -8,7 +8,8 @@ Purpose
 
 This module has three purposes while iterating over pairs of FastQ files:
     - Check integrity of FastQ (corrupted files)
-    - Guess the encoding of FastQ files
+    - Guess the encoding of FastQ files (this can be turned off in the 'opts'
+    argument, see below.)
     - Estimate coverage for each sample
 
 Expected input
@@ -22,6 +23,10 @@ gsize: Expected genome size
     .: '2.5'
 cov: Minimum coverage threshold
     .: '15'
+opts: Specify additional arguments for executing integrity_coverage. The
+    arguments should be a string of command line arguments, such as '-e'.
+    The accepted arguments are:
+        '-e' : Skip encoding guess.
 
 Generated output
 ---------------
@@ -46,7 +51,7 @@ Note
 ----
 
 In case of a corrupted sample, all expected output files should have
-'Corrupt' written.
+'corrupt' written.
 
 """
 
@@ -128,7 +133,13 @@ def get_qual_range(qual_str):
 
 
 def get_encodings_in_range(rmin, rmax, ranges=RANGES):
-    """
+    """ Return the valid encodings for a given encoding range.
+
+    The encoding ranges are stored in the RANGES constant dictionary, with
+    the encoding name as a string and a list as a value containing the
+    phred score and a tuple with the encoding range. For a given encoding
+    range provided via the two first arguments, this function will return
+    all possible encodings and phred scores.
 
     Parameters
     ----------
@@ -143,6 +154,8 @@ def get_encodings_in_range(rmin, rmax, ranges=RANGES):
     -------
     valid_encodings : list
         List of all possible encodings for the provided range
+    valid_phred : list
+        List of all possible phred scores
     """
 
     valid_encodings = []
@@ -187,6 +200,13 @@ def main():
         else:
             file_objects.append(open(fastq))
 
+    # The '*_encoding' file stores a string with the encoding ('Sanger')
+    # If no encoding is guessed, 'None' should be stored
+    # The '*_phred' file stores a string with the phred score ('33')
+    # If no phred is guessed, 'None' should be stored
+    # The '*_coverage' file stores the estimated coverage ('88')
+    # The '*_report' file stores a csv report of the file
+    # The '*_max_len' file stores a string with the maximum contig len ('155')
     with open("{}_encoding".format(FASTQ_ID), "w") as enc_fh, \
             open("{}_phred".format(FASTQ_ID), "w") as phred_fh, \
             open("{}_coverage".format(FASTQ_ID), "w") as cov_fh, \
@@ -238,10 +258,10 @@ def main():
             # Encoding not found
             else:
                 enc_fh.write("None")
-                enc_fh.write("None")
+                phred_fh.write("None")
 
             # Estimate coverage
-            exp_coverage = round(chars / (GSIZE * 1000000), 1)
+            exp_coverage = round(chars / (GSIZE * 1e6), 2)
             if exp_coverage >= MINIMUM_COVERAGE:
                 cov_rep.write("{},{},{}\\n".format(
                     FASTQ_ID, str(exp_coverage), "PASS"))
@@ -258,7 +278,7 @@ def main():
         # This exception is raised when the input FastQ files are corrupted
         except EOFError:
             for fh in [enc_fh, phred_fh, cov_fh, cov_rep]:
-                fh.write("Corrupt")
+                fh.write("corrupt")
 
 
 main()
