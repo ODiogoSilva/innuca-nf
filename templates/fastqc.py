@@ -44,7 +44,9 @@ def convert_adatpers(adapter_fasta):
 
     Returns
     -------
-
+    adapter_out : str or None
+        The path to the reformatted adapter file. Returns None if the adapters
+        file does not exist or the path is incorrect.
     """
 
     adapter_out = "fastqc_adapters.tab"
@@ -58,12 +60,14 @@ def convert_adatpers(adapter_fasta):
                 if line.startswith(">"):
 
                     head = line[1:].strip()
+                    # Get the next line with the sequence string
                     sequence = next(fh).strip()
 
                     adap_fh.write("{}\\t{}\\n".format(head, sequence))
 
         return adapter_out
 
+    # If an invalid adapters file is provided, return None.
     except FileNotFoundError:
         return
 
@@ -84,6 +88,8 @@ def main():
         "--format",
         "fastq",
         "--threads",
+        # Get the allowed number of cpus from the nextflow process 'cpu'
+        # directive
         "$task.cpus"
     ]
 
@@ -120,6 +126,8 @@ def main():
         summary_file = join(fastqc_dir, "summary.txt")
         fastqc_data_file = join(fastqc_dir, "fastqc_data.txt")
 
+        # Rename output files to a file name that is easier to handle in the
+        # output channel
         os.rename(fastqc_data_file, "pair_{}_data".format(i + 1))
         os.rename(summary_file, "pair_{}_summary".format(i + 1))
 
