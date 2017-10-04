@@ -1,6 +1,7 @@
 #!/usr/bin/nextflow
 
 // SETTING CHANNELS //
+// GENERAL PARAMS //
 nsamples = file(params.fastq_files).size()
 // Channel for FastQ files
 fastq_raw = Channel.fromFilePairs(params.fastq_files)
@@ -10,16 +11,20 @@ genome_size = Channel
 // Channel for minimum coverage threshold
 min_coverage = Channel
                 .value(params.min_coverage)
+
+// FASTQC CHANNELS //
 // Channel for adapters file
 adapters = Channel
-                .value("None")
-// Channels for Trimmomatic options
+                .value(params.adapters)
+
+// TRIMMOMATIC CHANNELS //
 trimmomatic_opts = Channel
                 .value([params.trim_sliding_window,
                         params.trim_leading,
                         params.trim_trailing,
                         params.tim_min_length])
-// Channels for Spades
+
+// SPADES CHANNELS //
 spades_opts = Channel
                 .value([params.spades_min_coverage,
                         params.spades_min_kmer_coverage])
@@ -29,7 +34,8 @@ spades_kmers = Channel
 process_spades_opts = Channel
                 .value([params.spades_min_contig_len,
                         params.spades_min_kmer_coverage])
-// Channels for process assembly mapping
+
+// ASSEMBLY MAPPING CHANNELS //
 assembly_mapping_opts = Channel
                 .value(params.min_assembly_coverage)
 
@@ -136,7 +142,8 @@ process report_corrupt {
 
 /** fastqc
 This process will perform the fastQC analysis for each sample. In this run,
-the output files of FastQC are sent to the output channel
+the output files (summary and data) of FastQC are sent to the output channel
+as pair_1* and pair_2* files.
 */
 process fastqc {
 

@@ -15,13 +15,12 @@ fastq_id: Sample Identification string
 fastq_pair: Pair of FastQ file paths
     .: 'SampleA_1.fastq.gz SampleA_2.fastq.gz'
 
-
 Generated output
 ----------------
 pair_[1,2]_data: File containing FastQC report at the nucleotide level
-    .: 'pair_1_data'
+    .: 'pair_1_data' and 'pair_2_data'
 pair_[1,2]_summary: File containing FastQC report for each category
-    .: 'pair_1_summary'
+    .: 'pair_1_summary' and 'pair_2_summary'
 """
 
 import os
