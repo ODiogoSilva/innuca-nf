@@ -68,8 +68,7 @@ process integrity_coverage {
 // TRIAGE OF CORRUPTED SAMPLES
 corrupted = Channel.create()
 sample_ok = Channel.create()
-
-// Corrupted samples have the 2nd value with 'Corrupt'
+// Corrupted samples have the 2nd value with 'corrupt'
 integrity_processed.choice(corrupted, sample_ok) {
     a -> a[2].text == "corrupt" ? 0 : 1
 }
@@ -101,12 +100,13 @@ process report_coverage {
     publishDir 'reports/coverage/'
 
     input:
-    file(report) from cov_report.filter{ it.text != "Corrupt" }
+    file(report) from cov_report.filter{ it.text != "corrupt" }.collect()
 
     output:
     file 'estimated_coverage_initial.csv'
 
     """
+    echo Sample,Estimated coverage,Status >> estimated_coverage_initial.csv
     cat $report >> estimated_coverage_initial.csv
     """
 }
