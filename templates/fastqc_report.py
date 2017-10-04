@@ -236,7 +236,7 @@ def check_summary_health(summary_file):
 def main():
 
     with open("fastqc_health", "w") as health_fh, \
-            open("trim_report", "w") as trim_rep, \
+            open("report", "w") as rep_fh, \
             open("optimal_trim", "w") as trim_fh:
 
         # Perform health check according to the FastQC summary report for
@@ -253,6 +253,7 @@ def main():
                 for k, v in summary_info.items():
                     health_fh.write("{}: {}\\n".format(k, v))
                     trim_fh.write("fail")
+                    rep_fh.write("{},fail,fail\\n".format(FASTQ_ID))
                 return
             else:
                 health_fh.write("pass")
@@ -267,8 +268,8 @@ def main():
         optimal_trim = get_sample_trim(RESULT_P1[0], RESULT_P2[0])
         trim_fh.write("{}".format(" ".join([str(x) for x in optimal_trim])))
 
-        trim_rep.write("{},{},{}\\n".format(FASTQ_ID, optimal_trim[0],
-                                        optimal_trim[1]))
+        rep_fh.write("{},{},{}\\n".format(FASTQ_ID, optimal_trim[0],
+                                          optimal_trim[1]))
 
 
 main()

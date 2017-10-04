@@ -208,7 +208,7 @@ process trim_report {
 }
 
 
-// Triage of samples with bad health
+// Triage of samples with bad health according to FastQC report
 fail_fastqc_report = Channel.create()
 pass_fastqc_report = Channel.create()
 
