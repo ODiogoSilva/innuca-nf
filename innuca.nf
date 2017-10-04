@@ -179,8 +179,8 @@ process fastqc_report {
 
     output:
     set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
-    file 'trim_report' into trim_rep
-    file "${fastq_id}_*_summary.txt"
+    file 'report' into trim_rep
+    file "${fastq_id}_*_summary.txt" optional true
 
     script:
     template "fastqc_report.py"
@@ -218,7 +218,8 @@ fastqc_trim.choice(fail_fastqc_report, pass_fastqc_report) {
 
 
 /** trimmomatic
-This process will execute trimmomatic
+This process will execute trimmomatic. Currently, the main channel requires
+information on the trim_range and phred score.
 */
 process trimmomatic {
 
