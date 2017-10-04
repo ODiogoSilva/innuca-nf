@@ -14,9 +14,9 @@ Expected input
 fastq_id: Sample Identification string
     .: 'SampleA'
 result_p1: Path to FastQC result files for pair 1
-    .: 'SampleA_1_fastqc/data', 'SampleA_1_fastqc/summary'
+    .: 'SampleA_1_data SampleA_1_summary'
 result_p2 Path to FastQC result files for pair 2
-    .: 'SampleA_2_fastqc/data', 'SampleA_2_fastqc/summary'
+    .: 'SampleA_2_data SampleA_2_summary'
 
 Generated output
 ----------------
@@ -29,6 +29,8 @@ optimal_trim: Stores a tuple with the optimal trimming positions for 5' and
     .: '15 151'
 
 """
+
+import os
 
 from collections import OrderedDict
 
@@ -234,13 +236,14 @@ def check_summary_health(summary_file):
 def main():
 
     with open("fastqc_health", "w") as health_fh, \
+            open("trim_report", "w") as trim_rep, \
             open("optimal_trim", "w") as trim_fh:
 
         # Perform health check according to the FastQC summary report for
         # each pair. If both pairs pass the check, send the 'pass' information
         # to the 'fastqc_health' channel. If at least one fails, send the
         # summary report.
-        for fastqc_summary in [RESULT_P1[1], RESULT_P2[1]]:
+        for p, fastqc_summary in enumerate([RESULT_P1[1], RESULT_P2[1]]):
 
             health, summary_info = check_summary_health(fastqc_summary)
 
@@ -254,11 +257,18 @@ def main():
             else:
                 health_fh.write("pass")
 
+            # Rename category summary file to the channel that will publish
+            # The results
+            output_file = "{}_{}_summary.txt".format(FASTQ_ID, p)
+            os.rename(fastqc_summary, output_file)
+
         # Get optimal trimming range for sample, based on the per base sequence
         # content
         optimal_trim = get_sample_trim(RESULT_P1[0], RESULT_P2[0])
-
         trim_fh.write("{}".format(" ".join([str(x) for x in optimal_trim])))
+
+        trim_rep.write("{},{},{}\\n".format(FASTQ_ID, optimal_trim[0],
+                                        optimal_trim[1]))
 
 
 main()

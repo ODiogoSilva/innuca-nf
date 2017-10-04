@@ -172,17 +172,41 @@ process fastqc_report {
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
+    publishDir 'reports/fastqc/', pattern: '*summary.txt', mode: 'copy'
 
     input:
     set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed
 
     output:
     set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
+    file 'trim_report' into trim_rep
+    file "${fastq_id}_*_summary.txt"
 
     script:
     template "fastqc_report.py"
 
 }
+
+/** trim_report
+This will collect the optimal trim points assessed by the fastqc_report
+process and write the results of all samples in a single csv file
+*/
+process trim_report {
+
+    publishDir 'reports/fastqc/', mode: 'copy'
+
+    input:
+    file trim from trim_rep.collect()
+
+    output:
+    file "FastQC_trim_report.csv"
+
+    """
+    echo Sample,Trim begin, Trim end >> FastQC_trim_report.csv
+    cat $trim >> FastQC_trim_report.csv
+    """
+}
+
 
 // Triage of samples with bad health
 fail_fastqc_report = Channel.create()
