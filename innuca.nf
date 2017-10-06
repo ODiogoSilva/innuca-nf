@@ -292,12 +292,13 @@ process report_coverage_2 {
     publishDir 'reports/coverage/'
 
     input:
-    file(report) from cov_report_2.filter{ it.text != "Corrupt" }
+    file(report) from cov_report_2.filter{ it.text != "corrupt" }.collect()
 
     output:
     file 'estimated_coverage_second.csv'
 
     """
+    echo Sample,Estimated coverage,Status >> estimated_coverage_second.csv
     cat $report >> estimated_coverage_second.csv
     """
 }
