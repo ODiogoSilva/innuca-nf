@@ -361,6 +361,7 @@ process spades_report {
 
 }
 
+
 process compile_assembly_report {
 
     input:
@@ -385,6 +386,7 @@ process process_spades {
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
+    publishDir "reports/assembly/spades_filter", pattern: '*.report.csv', mode: 'copy'
 
     input:
     set fastq_id, file(assembly) from spades_processed
@@ -393,7 +395,7 @@ process process_spades {
 
     output:
     set fastq_id, file('*.assembly.fasta') into spades_assembly
-    file '*.report.fasta' into spades_report
+    file '*.report.csv'
 
     script:
     template "process_spades.py"

@@ -354,7 +354,7 @@ class Assembly:
         with open(output_file, "w") as fh:
 
             for contig_id, vals in self.report.items():
-                fh.write("{}; {}\\n".format(contig_id, vals))
+                fh.write("{}, {}\\n".format(contig_id, vals))
 
 
 def main():
@@ -377,7 +377,7 @@ def main():
     output_assembly = "{}.assembly.fasta".format(FASTQ_ID)
     spades_assembly.write_assembly(output_assembly)
     # Write report
-    output_report = "{}.report.fasta".format(FASTQ_ID)
+    output_report = "{}.report.csv".format(FASTQ_ID)
     spades_assembly.write_report(output_report)
 
 
