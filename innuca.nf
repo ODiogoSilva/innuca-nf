@@ -337,11 +337,24 @@ process spades {
     val kmers from spades_kmers
 
     output:
-    set fastq_id, file('contigs.fasta') optional true into spades_listen, spades_processed
+    set fastq_id, file('contigs.fasta') optional true into spades_listen, spades_processed, report
     file "spades_status" into spades_status
 
     script:
     template "spades.py"
+
+}
+
+
+process assembly_report {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly) from report
+
+    script:
+    template "assembly_report.py"
 
 }
 
