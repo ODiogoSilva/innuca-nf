@@ -337,7 +337,7 @@ process spades {
     val kmers from spades_kmers
 
     output:
-    set fastq_id, file('contigs.fasta') optional true into spades_listen, spades_processed, report
+    set fastq_id, file('contigs.fasta') optional true into spades_listen, spades_processed, s_report
     file "spades_status" into spades_status
 
     script:
@@ -346,15 +346,34 @@ process spades {
 }
 
 
-process assembly_report {
+process spades_report {
 
     tag { fastq_id }
 
     input:
-    set fastq_id, file(assembly) from report
+    set fastq_id, file(assembly) from s_report
+
+    output:
+    set val('spades'), "*_assembly_report.csv" into ma_report
 
     script:
     template "assembly_report.py"
+
+}
+
+process compile_assembly_report {
+
+    input:
+    set assembler, file(report) from ma_report.collect()
+    publishDir "reports/assembly/$assembler/"
+
+    output:
+    file "${assembler}_assembly_report.csv"
+
+    """
+    echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > ${assembler}_assembly_report.csv
+    cat $report >> ${assembler}_assembly_report.csv
+    """
 
 }
 
