@@ -16,7 +16,7 @@ fastq_pair: Pair of FastQ file paths
     .: 'SampleA_1.fastq.gz SampleA_2.fastq.gz'
 kmers: Setting for Spades kmers. Can be either 'auto', 'default' or
     a user provided list.
-    .: 'auto' or 'defaut' or '55 77 99 113 127'
+    .: 'auto' or 'default' or '55 77 99 113 127'
 opts: List of options for spades execution.
     1. The minimum number of reads to consider an edge in the de Bruijn
     graph during the assembly.
