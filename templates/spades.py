@@ -10,7 +10,7 @@ This module is intended execute spades on sets of paired end FastQ files
 
 Expected input
 --------------
-fastq_id: Pair of FastQ file paths
+fastq_id: Sample Identification string
     .: 'SampleA'
 fastq_pair: Pair of FastQ file paths
     .: 'SampleA_1.fastq.gz SampleA_2.fastq.gz'
