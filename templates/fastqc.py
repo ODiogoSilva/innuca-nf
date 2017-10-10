@@ -100,7 +100,7 @@ def main():
     # Add FastQ files at the end of command line
     cli += FASTQ_PAIR
 
-    p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
+    p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE, shell=False)
     stdout, stderr = p.communicate()
 
     # Check if the FastQC output was correctly generated.
