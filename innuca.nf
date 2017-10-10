@@ -330,7 +330,7 @@ options for SPAdes (see spades.py template).
 process spades {
 
     tag { fastq_id }
-    publishDir 'assemblies/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
+    publishDir 'results/assemblies/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
     input:
     set fastq_id, file(fastq_pair), max_len from fastqc_processed_2.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
@@ -487,7 +487,7 @@ process pilon {
 
     tag { fastq_id }
     echo false
-    publishDir 'assemblies/pilon/', mode: 'copy'
+    publishDir 'results/assemblies/pilon/', mode: 'copy'
 
     input:
     set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping
@@ -548,8 +548,27 @@ process mlst {
     input:
     set fastq_id, file(assembly) from pilon_processed
 
+    output:
+    file '*.mlst.txt' into mlst_result
+
     """
     mlst $assembly >> ${fastq_id}.mlst.txt
+    """
+}
+
+
+process compile_mlst {
+
+    publishDir "results/mlst/"
+
+    input:
+    file res from mlst_result.collect()
+
+    output:
+    file "mlst_report.tsv"
+
+    """
+    cat $res >> mlst_report.tsv
     """
 }
 
