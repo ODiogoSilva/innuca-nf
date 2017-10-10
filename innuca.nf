@@ -39,7 +39,7 @@ process_spades_opts = Channel
 assembly_mapping_opts = Channel
                 .value(params.min_assembly_coverage)
 
-/** integrity_coverage
+/** INTEGRITY_COVERAGE
 This process will check the integrity, encoding and get the estimated
 coverage for each FastQ pair. Corrupted FastQ files will also be detected
 and filtered here.
@@ -95,7 +95,7 @@ sample_ok
 
 sample_listen.ifEmpty{ exit 1, "No samples left after checking FastQ integrity and estimating coverage. Exiting." }
 
-/** report_coverage
+/** REPORT_COVERAGE
 This process will report the expected coverage for each non-corrupted sample
 and write the results to 'reports/coverage/estimated_coverage_initial.csv'
 */
@@ -117,7 +117,7 @@ process report_coverage {
     """
 }
 
-/** report_corrupt
+/** REPORT_CORRUPT
 This process will report the corrupted samples and write the results to
 'reports/corrupted/corrupted_samples.txt'
 */
@@ -140,7 +140,7 @@ process report_corrupt {
 
 }
 
-/** fastqc
+/** FASTQC
 This process will perform the fastQC analysis for each sample. In this run,
 the output files (summary and data) of FastQC are sent to the output channel
 as pair_1* and pair_2* files.
@@ -151,7 +151,7 @@ process fastqc {
 
     input:
     set fastq_id, file(fastq_pair) from sample_good
-    val ad from adapters
+    val ad from Channel.value('None')
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_listen, fastqc_processed
@@ -163,7 +163,7 @@ process fastqc {
 
 fastqc_listen.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }
 
-/** fastqc_report
+/** FASTQC_REPORT
 This process will parse the result files from a FastQC analyses and output
 the optimal_trim information for Trimmomatic
 */
@@ -330,6 +330,7 @@ fastqc_listen_2.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting.
 process spades {
 
     tag { fastq_id }
+    publishDir 'assemblies/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
     input:
     set fastq_id, file(fastq_pair), max_len from fastqc_processed_2.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
@@ -337,7 +338,7 @@ process spades {
     val kmers from spades_kmers
 
     output:
-    set fastq_id, file('contigs.fasta') optional true into spades_listen, spades_processed, s_report
+    set fastq_id, file('*_spades.assembly.fasta') optional true into spades_listen, spades_processed, s_report
     file "spades_status" into spades_status
 
     script:
@@ -354,7 +355,7 @@ process spades_report {
     set fastq_id, file(assembly) from s_report
 
     output:
-    set val('spades'), "*_assembly_report.csv" into ma_report
+    set val('spades'), "*_assembly_report.csv" into sm_report
 
     script:
     template "assembly_report.py"
@@ -364,9 +365,10 @@ process spades_report {
 
 process compile_assembly_report {
 
+    publishDir "reports/assembly/${assembler}/", mode: 'copy'
+
     input:
-    set assembler, file(report) from ma_report.collect()
-    publishDir "reports/assembly/$assembler/"
+    set assembler, file(report) from sm_report.collect()
 
     output:
     file "${assembler}_assembly_report.csv"
@@ -397,6 +399,9 @@ process process_spades {
     set fastq_id, file('*.assembly.fasta') into spades_assembly
     file '*.report.csv'
 
+    when:
+    params.stop_at != "process_spades"
+
     script:
     template "process_spades.py"
 
@@ -424,6 +429,10 @@ process assembly_mapping {
     output:
     set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' into mapping_coverage
 
+    when:
+    params.stop_at != "assembly_mapping"
+
+    script:
     """
     bowtie2-build --threads ${task.cpus} $assembly genome_index
     bowtie2 -q --very-sensitive-local --threads ${task.cpus} -x genome_index -1 $fastq_1 -2 $fastq_2 -S mapping.sam
@@ -460,13 +469,13 @@ process pilon {
 
     tag { fastq_id }
     echo false
-    publishDir 'assemblies/', mode: 'copy'
+    publishDir 'assemblies/pilon/', mode: 'copy'
 
     input:
     set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping
 
     output:
-    set fastq_id, '*_polished.assembly.fasta' into pilon_processed
+    set fastq_id, '*_polished.assembly.fasta' into pilon_processed, p_report
 
 
     """
@@ -474,6 +483,40 @@ process pilon {
     """
 
 }
+
+
+process pilon_report {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly) from p_report
+
+    output:
+    set val('pilon'), "*_assembly_report.csv" into pm_report
+
+    script:
+    template "assembly_report.py"
+
+}
+
+
+//process compile_pilon_report {
+//
+//    publishDir "reports/assembly/pilon/", mode: 'copy'
+//
+//    input:
+//    set assembler, file(report) from pm_report.collect()
+//
+//    output:
+//    file "${assembler}_assembly_report.csv"
+//
+//    """
+//    echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > ${assembler}_assembly_report.csv
+//    cat $report >> ${assembler}_assembly_report.csv
+//    """
+//
+//}
 
 
 process mlst {
@@ -486,7 +529,7 @@ process mlst {
     set fastq_id, file(assembly) from pilon_processed
 
     """
-    mlst $assembly
+    mlst $assembly >> ${fastq_id}.mlst.txt
     """
 
 }
