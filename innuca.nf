@@ -314,7 +314,7 @@ process fastqc {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed_2
-    file "fastq_status" into fastqc_status_2
+    set fastq_id, val("fastqc2"), file("fastq_status") into fastqc_status_2
 
     script:
     template "fastqc.py"
@@ -339,7 +339,7 @@ process spades {
 
     output:
     set fastq_id, file('*_spades.assembly.fasta') optional true into spades_processed, s_report
-    file "spades_status" into spades_status
+    set fastq_id, val("spades"), file("spades_status") into spades_status
 
     script:
     template "spades.py"
@@ -588,7 +588,9 @@ process status {
     tag { fastq_id }
 
     input:
-    set fastq_id, task_name, status from fastqc_status.mix(trimmomatic_status)
+    set fastq_id, task_name, status from fastqc_status.mix(trimmomatic_status,
+                                                           fastqc_status_2,
+                                                           spades_status)
 
     output:
     file 'status_*' into master_status
