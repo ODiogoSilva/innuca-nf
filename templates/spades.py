@@ -34,6 +34,7 @@ spades_status :  Stores the status of the spades run. If it was
 
 """
 
+import os
 import subprocess
 
 from subprocess import PIPE
@@ -123,6 +124,9 @@ def main():
             return
         else:
             fh.write("pass")
+
+    # Change the default contigs.fasta assembly name to a more informative one
+    os.rename("contigs.fasta", "{}_spades.assembly.fasta".format(FASTQ_ID))
 
 
 main()
