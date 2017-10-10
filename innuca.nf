@@ -357,11 +357,10 @@ process spades_report {
     set fastq_id, file(assembly) from s_report
 
     output:
-    set val('spades'), "*_assembly_report.csv" into sm_report
+    file "*_assembly_report.csv" into sm_report
 
     script:
     template "assembly_report.py"
-
 }
 
 
@@ -369,21 +368,20 @@ process spades_report {
 Plug-in process that compiles the results of the spades_report process for
 all samples
 */
-process compile_assembly_report {
+process compile_spades_report {
 
-    publishDir "reports/assembly/${assembler}/", mode: 'copy'
+    publishDir "reports/assembly/spades/", mode: 'copy'
 
     input:
-    set assembler, file(report) from sm_report.collect()
+    file(report) from sm_report.collect()
 
     output:
-    file "${assembler}_assembly_report.csv"
+    file "spades_assembly_report.csv"
 
     """
-    echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > ${assembler}_assembly_report.csv
-    cat $report >> ${assembler}_assembly_report.csv
+    echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > spades_assembly_report.csv
+    cat $report >> spades_assembly_report.csv
     """
-
 }
 
 
@@ -513,11 +511,28 @@ process pilon_report {
     set fastq_id, file(assembly) from p_report
 
     output:
-    set val('pilon'), "*_assembly_report.csv" into pm_report
+    file "*_assembly_report.csv" into pm_report
 
     script:
     template "assembly_report.py"
 
+}
+
+
+process compile_spades_report {
+
+    publishDir "reports/assembly/pilon/", mode: 'copy'
+
+    input:
+    file(report) from pm_report.collect()
+
+    output:
+    file "pilon_assembly_report.csv"
+
+    """
+    echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > pilon_assembly_report.csv
+    cat $report >> pilon_assembly_report.csv
+    """
 }
 
 
@@ -536,7 +551,6 @@ process mlst {
     """
     mlst $assembly >> ${fastq_id}.mlst.txt
     """
-
 }
 
 
@@ -551,6 +565,8 @@ process mlst {
 Reports the status of a sample in any given process.
 */
 process status {
+
+    tag { fastq_id }
 
     input:
     set fastq_id, task_name, status from fastqc_status.mix(trimmomatic_status)
@@ -577,3 +593,4 @@ process compile_status {
     cat $status >> master_status.csv
     """
 }
+
