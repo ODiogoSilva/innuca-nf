@@ -39,7 +39,7 @@ process_spades_opts = Channel
 assembly_mapping_opts = Channel
                 .value(params.min_assembly_coverage)
 
-/** INTEGRITY_COVERAGE
+/** INTEGRITY_COVERAGE - MAIN
 This process will check the integrity, encoding and get the estimated
 coverage for each FastQ pair. Corrupted FastQ files will also be detected
 and filtered here.
@@ -93,8 +93,7 @@ sample_ok
         a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3].text] ]
     }
 
-
-/** REPORT_COVERAGE
+/** REPORT_COVERAGE - PLUG-IN
 This process will report the expected coverage for each non-corrupted sample
 and write the results to 'reports/coverage/estimated_coverage_initial.csv'
 */
@@ -116,7 +115,7 @@ process report_coverage {
     """
 }
 
-/** REPORT_CORRUPT
+/** REPORT_CORRUPT - PLUG-IN
 This process will report the corrupted samples and write the results to
 'reports/corrupted/corrupted_samples.txt'
 */
@@ -139,7 +138,7 @@ process report_corrupt {
 
 }
 
-/** FASTQC
+/** FASTQC - MAIN
 This process will perform the fastQC analysis for each sample. In this run,
 the output files (summary and data) of FastQC are sent to the output channel
 as pair_1* and pair_2* files.
@@ -153,14 +152,14 @@ process fastqc {
     val ad from Channel.value('None')
 
     output:
-    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_listen, fastqc_processed
-    file "fastq_status" into fastqc_status
+    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed
+    set fastq_id, file("fastq_status") into fastqc_status
 
     script:
     template "fastqc.py"
 }
 
-/** FASTQC_REPORT
+/** FASTQC_REPORT - MAIN
 This process will parse the result files from a FastQC analyses and output
 the optimal_trim information for Trimmomatic
 */
@@ -184,7 +183,7 @@ process fastqc_report {
 
 }
 
-/** trim_report
+/** TRIM_REPORT - PLUG-IN
 This will collect the optimal trim points assessed by the fastqc_report
 process and write the results of all samples in a single csv file
 */
@@ -214,7 +213,7 @@ fastqc_trim.choice(fail_fastqc_report, pass_fastqc_report) {
 }
 
 
-/** trimmomatic
+/** TRIMMOMATIC - MAIN
 This process will execute trimmomatic. Currently, the main channel requires
 information on the trim_range and phred score.
 */
@@ -227,15 +226,19 @@ process trimmomatic {
     val opts from trimmomatic_opts
 
     output:
-    set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_listen, trimmomatic_processed, bowtie_input
-    file "trimmomatic_status" into trimmomatic_status
+    set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_processed, bowtie_input
+    set fastq_id, file("trimmomatic_status") into trimmomatic_status
 
     script:
     template "trimmomatic.py"
 
 }
 
-
+/** INTEGRITY_COVERAGE_2 - MAIN
+This process will estimate the coverage of the processed FastQ files after
+the trimmomatic trimming. Note that the encoding guessing is turned-of
+by using the '-e' option in the opts variable.
+*/
 process integrity_coverage_2 {
 
     tag { fastq_id }
@@ -275,7 +278,7 @@ integrity_processed_2
     }
 
 
-/** REPORT_COVERAGE_2
+/** REPORT_COVERAGE_2 - PLUG-IN
 This process will report the expected coverage for each non-corrupted sample
 and write the results to 'reports/coverage/estimated_coverage_second.csv'
 */
@@ -298,7 +301,7 @@ process report_coverage_2 {
 }
 
 
-/** FASTQC_2
+/** FASTQC_2 - MAIN
 This process will perform the second fastQC analysis for each sample.
 In this run, the output files of FastQC are sent to the output channel
 */
@@ -311,7 +314,7 @@ process fastqc {
     val ad from adapters
 
     output:
-    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_listen_2, fastqc_processed_2
+    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed_2
     file "fastq_status" into fastqc_status_2
 
     script:
@@ -319,7 +322,7 @@ process fastqc {
 }
 
 
-/** SPADES
+/** SPADES - MAIN
 This process performs the FastQ assembly using SPAdes. Besides the FastQ
 files, this process requires an estimate of the maximum contig len
 (inferred in the integrity_coverage process), and user specified
@@ -336,7 +339,7 @@ process spades {
     val kmers from spades_kmers
 
     output:
-    set fastq_id, file('*_spades.assembly.fasta') optional true into spades_listen, spades_processed, s_report
+    set fastq_id, file('*_spades.assembly.fasta') optional true into spades_processed, s_report
     file "spades_status" into spades_status
 
     script:
@@ -344,7 +347,7 @@ process spades {
 
 }
 
-/** SPADES_REPORT
+/** SPADES_REPORT - PLUG IN
 Plug-in process that provides an assembly report for each sample
 */
 process spades_report {
@@ -363,7 +366,7 @@ process spades_report {
 }
 
 
-/** COMPILE_ASSEMBLY_REPORT
+/** COMPILE_ASSEMBLY_REPORT - PLUG IN
 Plug-in process that compiles the results of the spades_report process for
 all samples
 */
@@ -385,7 +388,7 @@ process compile_assembly_report {
 }
 
 
-/** PROCESS_SPADES
+/** PROCESS_SPADES - MAIN
 Processes and filters the SPAdes assembly according to user-specified options
 */
 process process_spades {
@@ -423,7 +426,7 @@ bowtie_input
         .into(assembly_mapping_input)
 
 
-/** ASSEMBLY_MAPPING
+/** ASSEMBLY_MAPPING - MAIN
 Performs the mapping of pairs of FastQ reads into an assembled genome.
 It outputs a table with the coverage estimates for each contig in the
 assembly as well as the sorted BAM file.
@@ -455,7 +458,7 @@ process assembly_mapping {
 }
 
 
-/** PROCESS_ASSEMBLY_MAPPING
+/** PROCESS_ASSEMBLY_MAPPING -  MAIN
 Processes the results from the assembly_mapping process and filters the
 assembly contigs based on coverage and length thresholds.
 */
@@ -479,7 +482,7 @@ process process_assembly_mapping {
 }
 
 
-/** PILON
+/** PILON - MAIN
 Executes the pilon software on a given assembly, with the sorted BAM file
 resulting from the mapping of the raw reads into the assembly.
 */
@@ -519,25 +522,7 @@ process pilon_report {
 }
 
 
-//process compile_pilon_report {
-//
-//    publishDir "reports/assembly/pilon/", mode: 'copy'
-//
-//    input:
-//    set assembler, file(report) from pm_report.collect()
-//
-//    output:
-//    file "${assembler}_assembly_report.csv"
-//
-//    """
-//    echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > ${assembler}_assembly_report.csv
-//    cat $report >> ${assembler}_assembly_report.csv
-//    """
-//
-//}
-
-
-/** MLST
+/** MLST - PLUG-IN
 Executs MLST on a given assembly
 */
 process mlst {
@@ -551,6 +536,26 @@ process mlst {
 
     """
     mlst $assembly >> ${fastq_id}.mlst.txt
+    """
+
+}
+
+
+// FINAL PROCESSES
+// The next set of processes are intended to be of general use to several
+// processes for reporting/status purposes. Therefore, they must be defined
+// at the end.
+
+// Status channels
+main_status = Channel.create()
+
+process status {
+
+    input:
+    set fastq_id, file(status) from fastqc_status.mix(trimmomatic_status)
+
+    """
+    echo ${status}.text
     """
 
 }
