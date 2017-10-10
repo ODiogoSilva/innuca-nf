@@ -121,19 +121,18 @@ This process will report the corrupted samples and write the results to
 */
 process report_corrupt {
 
-    tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
     publishDir 'reports/corrupted/'
 
     input:
-    val fastq_id from corrupted.map{it[0]}
+    val fastq_id from corrupted.collect{it[0]}
 
     output:
     file 'corrupted_samples.txt'
 
     """
-    echo $fastq_id >> corrupted_samples.txt
+    echo ${fastq_id.join(",")} | tr "," "\n" >> corrupted_samples.txt
     """
 
 }
@@ -153,7 +152,7 @@ process fastqc {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed
-    set fastq_id, file("fastq_status") into fastqc_status
+    set fastq_id, val("fastqc"), file("fastq_status") into fastqc_status
 
     script:
     template "fastqc.py"
@@ -227,7 +226,7 @@ process trimmomatic {
 
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_processed, bowtie_input
-    set fastq_id, file("trimmomatic_status") into trimmomatic_status
+    set fastq_id, val("trimmomatic"), file("trimmomatic_status") into trimmomatic_status
 
     script:
     template "trimmomatic.py"
@@ -541,21 +540,40 @@ process mlst {
 }
 
 
-// FINAL PROCESSES
+// LISTENER PROCESSES
 // The next set of processes are intended to be of general use to several
-// processes for reporting/status purposes. Therefore, they must be defined
-// at the end.
+// processes for reporting/status purposes. They basically listen to
+// channels from arbitrary process during the pipeline execution
+// for those purposes. Therefore, they must be defined at the end.
 
-// Status channels
-main_status = Channel.create()
 
+/** STATUS
+Reports the status of a sample in any given process.
+*/
 process status {
 
     input:
-    set fastq_id, file(status) from fastqc_status.mix(trimmomatic_status)
+    set fastq_id, task_name, status from fastqc_status.mix(trimmomatic_status)
+
+    output:
+    file 'status_*' into master_status
 
     """
-    echo ${status}.text
+    echo $fastq_id, $task_name, \$(cat $status) > status_${fastq_id}_${task_name}
     """
+}
 
+process compile_status {
+
+    publishDir 'reports/status'
+
+    input:
+    file status from master_status.collect()
+
+    output:
+    file 'master_status.csv'
+
+    """
+    cat $status >> master_status.csv
+    """
 }
