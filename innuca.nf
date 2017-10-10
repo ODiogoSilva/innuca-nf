@@ -93,7 +93,6 @@ sample_ok
         a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3].text] ]
     }
 
-sample_listen.ifEmpty{ exit 1, "No samples left after checking FastQ integrity and estimating coverage. Exiting." }
 
 /** REPORT_COVERAGE
 This process will report the expected coverage for each non-corrupted sample
@@ -160,8 +159,6 @@ process fastqc {
     script:
     template "fastqc.py"
 }
-
-fastqc_listen.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }
 
 /** FASTQC_REPORT
 This process will parse the result files from a FastQC analyses and output
@@ -238,7 +235,6 @@ process trimmomatic {
 
 }
 
-trimmomatic_listen.ifEmpty{ exit 1, "No samples left after running Trimmomatic. Exiting." }
 
 process integrity_coverage_2 {
 
@@ -278,10 +274,8 @@ integrity_processed_2
         a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3]]]
     }
 
-sample_listen_2.ifEmpty{ exit 1, "No samples left after running second estimated coverage. Exiting." }
 
-
-/** report_coverage_2
+/** REPORT_COVERAGE_2
 This process will report the expected coverage for each non-corrupted sample
 and write the results to 'reports/coverage/estimated_coverage_second.csv'
 */
@@ -304,7 +298,7 @@ process report_coverage_2 {
 }
 
 
-/** fastqc_2
+/** FASTQC_2
 This process will perform the second fastQC analysis for each sample.
 In this run, the output files of FastQC are sent to the output channel
 */
@@ -324,9 +318,13 @@ process fastqc {
     template "fastqc.py"
 }
 
-fastqc_listen_2.ifEmpty{ exit 1, "No samples left after running FastQC. Exiting." }
 
-
+/** SPADES
+This process performs the FastQ assembly using SPAdes. Besides the FastQ
+files, this process requires an estimate of the maximum contig len
+(inferred in the integrity_coverage process), and user specified
+options for SPAdes (see spades.py template).
+*/
 process spades {
 
     tag { fastq_id }
@@ -346,7 +344,9 @@ process spades {
 
 }
 
-
+/** SPADES_REPORT
+Plug-in process that provides an assembly report for each sample
+*/
 process spades_report {
 
     tag { fastq_id }
@@ -363,6 +363,10 @@ process spades_report {
 }
 
 
+/** COMPILE_ASSEMBLY_REPORT
+Plug-in process that compiles the results of the spades_report process for
+all samples
+*/
 process compile_assembly_report {
 
     publishDir "reports/assembly/${assembler}/", mode: 'copy'
@@ -380,9 +384,10 @@ process compile_assembly_report {
 
 }
 
-spades_listen.ifEmpty{ exit 1, "No samples left after running Spades. Exiting." }
 
-
+/** PROCESS_SPADES
+Processes and filters the SPAdes assembly according to user-specified options
+*/
 process process_spades {
 
     tag { fastq_id }
@@ -418,6 +423,11 @@ bowtie_input
         .into(assembly_mapping_input)
 
 
+/** ASSEMBLY_MAPPING
+Performs the mapping of pairs of FastQ reads into an assembled genome.
+It outputs a table with the coverage estimates for each contig in the
+assembly as well as the sorted BAM file.
+*/
 process assembly_mapping {
 
     tag { fastq_id }
@@ -445,6 +455,10 @@ process assembly_mapping {
 }
 
 
+/** PROCESS_ASSEMBLY_MAPPING
+Processes the results from the assembly_mapping process and filters the
+assembly contigs based on coverage and length thresholds.
+*/
 process process_assembly_mapping {
 
     tag { fastq_id }
@@ -465,6 +479,10 @@ process process_assembly_mapping {
 }
 
 
+/** PILON
+Executes the pilon software on a given assembly, with the sorted BAM file
+resulting from the mapping of the raw reads into the assembly.
+*/
 process pilon {
 
     tag { fastq_id }
@@ -519,6 +537,9 @@ process pilon_report {
 //}
 
 
+/** MLST
+Executs MLST on a given assembly
+*/
 process mlst {
 
     tag { fastq_id }
