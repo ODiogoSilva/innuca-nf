@@ -132,7 +132,7 @@ def get_qual_range(qual_str):
     return min(vals), max(vals)
 
 
-def get_encodings_in_range(rmin, rmax, ranges=RANGES):
+def get_encodings_in_range(rmin, rmax):
     """ Return the valid encodings for a given encoding range.
 
     The encoding ranges are stored in the RANGES constant dictionary, with
@@ -147,8 +147,6 @@ def get_encodings_in_range(rmin, rmax, ranges=RANGES):
         Minimum Unicode code in range
     rmax : int
         Maximum Unicode code in range
-    ranges : dict
-        Maps the encoding name to the corresponding encoding range
 
     Returns
     -------
@@ -161,7 +159,7 @@ def get_encodings_in_range(rmin, rmax, ranges=RANGES):
     valid_encodings = []
     valid_phred = []
 
-    for encoding, (phred, (emin, emax)) in ranges.items():
+    for encoding, (phred, (emin, emax)) in RANGES.items():
         if rmin >= emin and rmax <= emax:
             valid_encodings.append(encoding)
             valid_phred.append(phred)
