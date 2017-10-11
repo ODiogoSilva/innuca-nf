@@ -11,4 +11,4 @@ script:
   - cd templates && pytest
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - cd templates && bash <(curl -s https://codecov.io/bash)
