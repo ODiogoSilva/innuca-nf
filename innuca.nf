@@ -154,6 +154,9 @@ process fastqc {
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed
     set fastq_id, val("fastqc"), file("fastq_status") into fastqc_status
 
+    when:
+    params.stop_at != "fastqc"
+
     script:
     template "fastqc.py"
 }
@@ -227,6 +230,9 @@ process trimmomatic {
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_processed, bowtie_input
     set fastq_id, val("trimmomatic"), file("trimmomatic_status") into trimmomatic_status
+
+    when:
+    params.stop_at != "trimmomatic"
 
     script:
     template "trimmomatic.py"
@@ -316,6 +322,9 @@ process fastqc {
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed_2
     set fastq_id, val("fastqc2"), file("fastq_status") into fastqc_status_2
 
+    when:
+    params.stop_at != "fastqc"
+
     script:
     template "fastqc.py"
 }
@@ -340,6 +349,9 @@ process spades {
     output:
     set fastq_id, file('*_spades.assembly.fasta') optional true into spades_processed, s_report
     set fastq_id, val("spades"), file("spades_status") into spades_status
+
+    when:
+    params.stop_at != "spades"
 
     script:
     template "spades.py"

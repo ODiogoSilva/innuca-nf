@@ -61,12 +61,14 @@ import zipfile
 
 from itertools import chain
 
-# CONSTANTS
-FASTQ_PAIR = '$fastq_pair'.split()
-FASTQ_ID = '$fastq_id'
-GSIZE = float('$gsize')
-MINIMUM_COVERAGE = float('$cov')
-OPTS = '$opts'
+# Set constants when running from Nextflow
+if __file__.endswith(".command.sh"):
+    # CONSTANTS
+    FASTQ_PAIR = '$fastq_pair'.split()
+    FASTQ_ID = '$fastq_id'
+    GSIZE = float('$gsize')
+    MINIMUM_COVERAGE = float('$cov')
+    OPTS = '$opts'
 
 RANGES = {
     'Sanger': [33, (33, 73)],
@@ -279,4 +281,5 @@ def main():
                 fh.write("corrupt")
 
 
-main()
+if __name__ == "__main__":
+    main()
