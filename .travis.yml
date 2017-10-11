@@ -6,9 +6,10 @@ python:
 install:
   - pip install pytest
   - pip install coverage
+  - pip install pytest-cov
 
 script:
-  - cd templates && pytest
+  - cd templates && py.test --cov=./
 
 after_success:
-  - cd templates && bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash)
