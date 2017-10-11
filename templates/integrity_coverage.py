@@ -84,24 +84,28 @@ COPEN = {
     "zip": zipfile.ZipFile
 }
 
+MAGIC_DICT = {
+    b"\\x1f\\x8b\\x08": "gz",
+    b"\\x42\\x5a\\x68": "bz2",
+    b"\\x50\\x4b\\x03\\x04": "zip"
+}
 
-def guess_file_compression(file_path):
+
+def guess_file_compression(file_path, magic_dict=None):
     """
 
     Parameters
     ----------
     file_path
+    magic_dict
 
     Returns
     -------
 
     """
 
-    magic_dict = {
-        b"\\x1f\\x8b\\x08": "gz",
-        b"\\x42\\x5a\\x68": "bz2",
-        b"\\x50\\x4b\\x03\\x04": "zip"
-    }
+    if not magic_dict:
+        magic_dict = MAGIC_DICT
 
     max_len = max(len(x) for x in magic_dict)
 
