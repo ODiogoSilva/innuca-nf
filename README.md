@@ -5,5 +5,7 @@
 
 [![Build Status](https://travis-ci.org/ODiogoSilva/innuca-nf.svg?branch=travis_pg)](https://travis-ci.org/ODiogoSilva/innuca-nf)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/dde333d535a446aaa4690fbea87a4b36)](https://www.codacy.com/app/o.diogosilva/innuca-nf?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ODiogoSilva/innuca-nf&amp;utm_campaign=Badge_Grade)
+[![codecov](https://codecov.io/gh/ODiogoSilva/innuca-nf/branch/master/graph/badge.svg)](https://codecov.io/gh/ODiogoSilva/innuca-nf)
+
 
 **Under construction**.
