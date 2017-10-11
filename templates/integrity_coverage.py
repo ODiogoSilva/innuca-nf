@@ -75,7 +75,7 @@ RANGES = {
     'Illumina-1.8': [33, (33, 74)],
     'Solexa': [64, (59, 104)],
     'Illumina-1.3': [64, (64, 104)],
-    'Illumina-1.5': [64, (67, 104)]
+    'Illumina-1.5': [64, (66, 105)]
 }
 
 COPEN = {
@@ -173,10 +173,10 @@ def get_encodings_in_range(rmin, rmax):
     return valid_encodings, valid_phred
 
 
-def main():
+def main(fastq_id, fastq_pair, gsize, minimum_coverage, opts):
 
     # Check for runtime options
-    if "-e" in OPTS:
+    if "-e" in opts:
         skip_encoding = True
     else:
         skip_encoding = False
@@ -194,7 +194,7 @@ def main():
 
     # Get compression of each FastQ pair file
     file_objects = []
-    for fastq in FASTQ_PAIR:
+    for fastq in fastq_pair:
         ftype = guess_file_compression(fastq)
 
         # This can guess the compression of gz, bz2 and zip. If it cannot
@@ -211,11 +211,11 @@ def main():
     # The '*_coverage' file stores the estimated coverage ('88')
     # The '*_report' file stores a csv report of the file
     # The '*_max_len' file stores a string with the maximum contig len ('155')
-    with open("{}_encoding".format(FASTQ_ID), "w") as enc_fh, \
-            open("{}_phred".format(FASTQ_ID), "w") as phred_fh, \
-            open("{}_coverage".format(FASTQ_ID), "w") as cov_fh, \
-            open("{}_report".format(FASTQ_ID), "w") as cov_rep, \
-            open("{}_max_len".format(FASTQ_ID), "w") as len_fh:
+    with open("{}_encoding".format(fastq_id), "w") as enc_fh, \
+            open("{}_phred".format(fastq_id), "w") as phred_fh, \
+            open("{}_coverage".format(fastq_id), "w") as cov_fh, \
+            open("{}_report".format(fastq_id), "w") as cov_rep, \
+            open("{}_max_len".format(fastq_id), "w") as len_fh:
 
         try:
             # Iterate over both pair files sequentially using itertools.chain
@@ -265,15 +265,15 @@ def main():
                 phred_fh.write("None")
 
             # Estimate coverage
-            exp_coverage = round(chars / (GSIZE * 1e6), 2)
-            if exp_coverage >= MINIMUM_COVERAGE:
+            exp_coverage = round(chars / (gsize * 1e6), 2)
+            if exp_coverage >= minimum_coverage:
                 cov_rep.write("{},{},{}\\n".format(
-                    FASTQ_ID, str(exp_coverage), "PASS"))
+                    fastq_id, str(exp_coverage), "PASS"))
                 cov_fh.write(str(exp_coverage))
             # Estimated coverage does not pass minimum threshold
             else:
                 cov_rep.write("{},{},{}\\n".format(
-                    FASTQ_ID, str(exp_coverage), "FAIL"))
+                    fastq_id, str(exp_coverage), "FAIL"))
                 cov_fh.write("fail")
 
             # Maximum read length
@@ -286,4 +286,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+
+    main(FASTQ_ID, FASTQ_PAIR, GSIZE, MINIMUM_COVERAGE, OPTS)
