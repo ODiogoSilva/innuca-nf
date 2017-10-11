@@ -1,0 +1,14 @@
+language: python
+
+python:
+  - "3.6"
+
+install:
+  - pip install pytest
+  - pip install coverage
+
+script:
+  - cd template && pytest
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
