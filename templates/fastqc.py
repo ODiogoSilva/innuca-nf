@@ -10,8 +10,6 @@ This module is intended to run FastQC on paired-end FastQ files.
 
 Expected input
 --------------
-fastq_id: Sample Identification string
-    .: 'SampleA'
 fastq_pair: Pair of FastQ file paths
     .: 'SampleA_1.fastq.gz SampleA_2.fastq.gz'
 
@@ -29,9 +27,11 @@ import subprocess
 from subprocess import PIPE
 from os.path import exists, join
 
-FASTQ_PAIR = '$fastq_pair'.split()
-FASTQ_ID = '$fastq_id'
-ADAPTER_FILE = eval('$ad')
+
+if __file__.endswith(".command.sh"):
+    FASTQ_PAIR = '$fastq_pair'.split()
+    ADAPTER_FILE = eval('$ad')
+    CPUS = '$task.cpus'
 
 
 def convert_adatpers(adapter_fasta):
@@ -54,7 +54,7 @@ def convert_adatpers(adapter_fasta):
     try:
 
         with open(adapter_fasta) as fh, \
-                open(adapter_out) as adap_fh:
+                open(adapter_out, "w") as adap_fh:
 
             for line in fh:
                 if line.startswith(">"):
@@ -72,13 +72,13 @@ def convert_adatpers(adapter_fasta):
         return
 
 
-def main():
+def main(fastq_pair, adapter_file, cpus):
 
     # If an adapter file was provided, convert it to FastQC format
-    if ADAPTER_FILE:
-        adapter_file = convert_adatpers(ADAPTER_FILE)
+    if adapter_file:
+        adapters = convert_adatpers(adapter_file)
     else:
-        adapter_file = None
+        adapters = None
 
     # Setting command line for FastQC
     cli = [
@@ -88,24 +88,22 @@ def main():
         "--format",
         "fastq",
         "--threads",
-        # Get the allowed number of cpus from the nextflow process 'cpu'
-        # directive
-        "$task.cpus"
+        str(cpus)
     ]
 
     # Add adapters file to command line, if it exists
-    if adapter_file:
-        cli += ["--adapters {}".format(adapter_file)]
+    if adapters:
+        cli += ["--adapters", "{}".format(adapters)]
 
     # Add FastQ files at the end of command line
-    cli += FASTQ_PAIR
+    cli += fastq_pair
 
     p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE, shell=False)
     stdout, stderr = p.communicate()
 
     # Check if the FastQC output was correctly generated.
     with open("fastq_status", "w") as fh:
-        for fastq in FASTQ_PAIR:
+        for fastq in fastq_pair:
             fpath = join(fastq.split(".")[0] + "_fastqc", "fastqc_data.txt")
             # If the FastQC output does not exist, pass the STDERR to
             # the output status channel and exit
@@ -119,7 +117,7 @@ def main():
 
     # Both FastQC have been correctly executed. Get the relevant FastQC
     # output files for the output channel
-    for i, fastq in enumerate(FASTQ_PAIR):
+    for i, fastq in enumerate(fastq_pair):
         # Get results for each pair
         fastqc_dir = fastq.split(".")[0] + "_fastqc"
 
@@ -132,4 +130,6 @@ def main():
         os.rename(summary_file, "pair_{}_summary".format(i + 1))
 
 
-main()
+if __name__ == "__main__":
+
+    main(FASTQ_PAIR, ADAPTER_FILE, CPUS)
