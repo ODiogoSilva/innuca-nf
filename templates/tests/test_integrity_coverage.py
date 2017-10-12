@@ -127,7 +127,8 @@ def test_full_run_files(temp_env):
 
     opts = [
         "sample",
-        ["../tests/test_data/sample_1.fastq.gz", "../tests/test_data/sample_2.fastq.gz"],
+        ["../tests/test_data/sample_1.fastq.gz",
+         "../tests/test_data/sample_2.fastq.gz"],
         2.1,
         15,
         ""
@@ -145,7 +146,8 @@ def test_full_run_success(temp_env):
 
     opts = [
         "sample",
-        ["../tests/test_data/sample_1.fastq.gz", "../tests/test_data/sample_2.fastq.gz"],
+        ["../tests/test_data/sample_1.fastq.gz",
+         "../tests/test_data/sample_2.fastq.gz"],
         2.1,
         15,
         ""
