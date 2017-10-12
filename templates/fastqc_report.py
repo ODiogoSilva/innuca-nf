@@ -35,9 +35,10 @@ import os
 from collections import OrderedDict
 
 
-RESULT_P1 = '$result_p1'.split()
-RESULT_P2 = '$result_p2'.split()
-FASTQ_ID = '$fastq_id'
+if __file__.endswith(".command.sh"):
+    RESULT_P1 = '$result_p1'.split()
+    RESULT_P2 = '$result_p2'.split()
+    FASTQ_ID = '$fastq_id'
 
 
 def get_trim_index(biased_list):
@@ -113,7 +114,7 @@ def trim_range(data_file):
     """
 
     # Target string for nucleotide bias assessment
-    target_nuc_bias = ">>Per base sequence content	fail"
+    target_nuc_bias = ">>Per base sequence content"
     # This flag will become True when gathering base proportion data
     # from file.
     gather = False
@@ -192,7 +193,7 @@ def get_sample_trim(p1_data, p2_data):
     # Get the optimal trim position for 5' end
     optimal_5trim = max([x[0] for x in sample_ranges])
     # Get optimal trim position for 3' end
-    optimal_3trim = min(x[1] for x in sample_ranges)
+    optimal_3trim = min([x[1] for x in sample_ranges])
 
     return optimal_5trim, optimal_3trim
 
