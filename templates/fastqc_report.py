@@ -293,7 +293,7 @@ def check_summary_health(summary_file):
     return True, summary_info
 
 
-def main():
+def main(fastq_id, result_p1, result_p2):
 
     with open("fastqc_health", "w") as health_fh, \
             open("report", "w") as rep_fh, \
@@ -303,7 +303,7 @@ def main():
         # each pair. If both pairs pass the check, send the 'pass' information
         # to the 'fastqc_health' channel. If at least one fails, send the
         # summary report.
-        for p, fastqc_summary in enumerate([RESULT_P1[1], RESULT_P2[1]]):
+        for p, fastqc_summary in enumerate([result_p1[1], result_p2[1]]):
 
             health, summary_info = check_summary_health(fastqc_summary)
 
@@ -313,23 +313,24 @@ def main():
                 for k, v in summary_info.items():
                     health_fh.write("{}: {}\\n".format(k, v))
                     trim_fh.write("fail")
-                    rep_fh.write("{},fail,fail\\n".format(FASTQ_ID))
+                    rep_fh.write("{},fail,fail\\n".format(fastq_id))
                 return
             else:
                 health_fh.write("pass")
 
             # Rename category summary file to the channel that will publish
             # The results
-            output_file = "{}_{}_summary.txt".format(FASTQ_ID, p)
+            output_file = "{}_{}_summary.txt".format(fastq_id, p)
             os.rename(fastqc_summary, output_file)
 
         # Get optimal trimming range for sample, based on the per base sequence
         # content
-        optimal_trim = get_sample_trim(RESULT_P1[0], RESULT_P2[0])
+        optimal_trim = get_sample_trim(result_p1[0], result_p2[0])
         trim_fh.write("{}".format(" ".join([str(x) for x in optimal_trim])))
 
-        rep_fh.write("{},{},{}\\n".format(FASTQ_ID, optimal_trim[0],
+        rep_fh.write("{},{},{}\\n".format(fastq_id, optimal_trim[0],
                                           optimal_trim[1]))
 
 
-main()
+if __name__ == '__main__':
+    main(FASTQ_ID, RESULT_P1, RESULT_P2)
