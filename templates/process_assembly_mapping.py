@@ -29,6 +29,7 @@ Generated output
 
 """
 
+import re
 import shutil
 import subprocess
 
@@ -68,7 +69,7 @@ def parse_coverage_table(coverage_file):
         for line in fh:
             # Get contig and coverage
             contig, cov = line.strip().split()
-            contig_len = int(contig.split("_")[4])
+            contig_len = int(re.search("length_(.+?)_", line).group(1))
             coverage_dict[contig] = {"cov": int(cov), "len": contig_len}
             # Add total coverage
             total_cov += int(cov)
