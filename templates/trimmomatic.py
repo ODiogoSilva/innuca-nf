@@ -41,16 +41,19 @@ import subprocess
 
 from subprocess import PIPE
 
-FASTQ_ID = '$fastq_id'
-FASTQ_PAIR = '$fastq_pair'.split()
-TRIM_RANGE = '$trim_range'.split()
-TRIM_OPTS = [x.strip() for x in '$opts'.strip("[]").split(",")]
-PHRED = '$phred'
+
+if __file__.endswith(".command.sh"):
+    FASTQ_ID = '$fastq_id'
+    FASTQ_PAIR = '$fastq_pair'.split()
+    TRIM_RANGE = '$trim_range'.split()
+    TRIM_OPTS = [x.strip() for x in '$opts'.strip("[]").split(",")]
+    PHRED = '$phred'
+
 
 TRIM_PATH = "/NGStools/Trimmomatic-0.36/trimmomatic.jar"
 
 
-def main():
+def main(fastq_id, fastq_pair, trim_range, trim_opts, phred):
 
     # Create base CLI
     cli = [
@@ -65,7 +68,7 @@ def main():
     # If the phred encoding was detected, provide it
     try:
         # Check if the provided PHRED can be converted to int
-        phred = int(PHRED)
+        phred = int(phred)
         phred_flag = "-phred{}".format(str(phred))
         cli += [phred_flag]
     # Could not detect phred encoding. Do not add explicit encoding to
@@ -74,26 +77,26 @@ def main():
         pass
 
     # Add input samples to CLI
-    cli += FASTQ_PAIR
+    cli += fastq_pair
 
     # Add output file names
     output_names = []
-    for i in range(len(FASTQ_PAIR)):
+    for i in range(len(fastq_pair)):
         output_names.append("{}_{}_P.fastq.gz".format(FASTQ_ID, str(i + 1)))
         output_names.append("{}_{}_U.fastq.gz".format(FASTQ_ID, str(i + 1)))
     cli += output_names
 
     # Add trimmomatic options
     cli += [
-        "CROP:{}".format(TRIM_RANGE[1]),
-        "HEADCROP:{}".format(TRIM_RANGE[0]),
-        "SLIDINGWINDOW:{}".format(TRIM_OPTS[0]),
-        "LEADING:{}".format(TRIM_OPTS[1]),
-        "TRAILING:{}".format(TRIM_OPTS[2]),
-        "MINLEN:{}".format(TRIM_OPTS[3]),
+        "CROP:{}".format(trim_range[1]),
+        "HEADCROP:{}".format(trim_range[0]),
+        "SLIDINGWINDOW:{}".format(trim_opts[0]),
+        "LEADING:{}".format(trim_opts[1]),
+        "TRAILING:{}".format(trim_opts[2]),
+        "MINLEN:{}".format(trim_opts[3]),
         "TOPHRED33",
         "-trimlog",
-        "trimlog.txt"
+        "{}_trimlog.txt".format(fastq_id)
     ]
 
     p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
@@ -109,4 +112,5 @@ def main():
             fh.write("pass")
 
 
-main()
+if __name__ == '__main__':
+    main(FASTQ_ID, FASTQ_PAIR, TRIM_RANGE, TRIM_OPTS, PHRED)
