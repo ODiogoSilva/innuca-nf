@@ -230,7 +230,7 @@ process trimmomatic {
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_processed, bowtie_input
     set fastq_id, val("trimmomatic"), file("trimmomatic_status") into trimmomatic_status
-    set fastq_id, 'trimlog.txt' optional true into trimmomatic_log
+    set fastq_id, '*_trimlog.txt' optional true into trimmomatic_log
 
     when:
     params.stop_at != "trimmomatic"
