@@ -91,7 +91,9 @@ def main():
         "LEADING:{}".format(TRIM_OPTS[1]),
         "TRAILING:{}".format(TRIM_OPTS[2]),
         "MINLEN:{}".format(TRIM_OPTS[3]),
-        "TOPHRED33"
+        "TOPHRED33",
+        "-trimlog",
+        "trimlog.txt"
     ]
 
     p = subprocess.Popen(cli, stdout=PIPE, stderr=PIPE)
