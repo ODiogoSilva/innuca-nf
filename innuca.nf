@@ -230,13 +230,29 @@ process trimmomatic {
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_processed, bowtie_input
     set fastq_id, val("trimmomatic"), file("trimmomatic_status") into trimmomatic_status
-    set fastq_id, '*_trimlog.txt' optional true into trimmomatic_log
+    file '*_trimlog.txt' optional true into trimmomatic_log
 
     when:
     params.stop_at != "trimmomatic"
 
     script:
     template "trimmomatic.py"
+
+}
+
+
+process trimmomatic_report {
+
+    publishDir 'reports/trimmomatic/'
+
+    input:
+    file log_files from trimmomatic_log.collect()
+
+    output:
+    file 'trimmomatic_report.csv'
+
+    script:
+    template "trimmomatic_report.py"
 
 }
 
