@@ -467,6 +467,7 @@ process assembly_mapping {
 
     output:
     set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into mapping_coverage
+    set fastq_id, val("assembly_mapping"), file("assembly_mapping_status")
 
     when:
     params.stop_at != "assembly_mapping"
