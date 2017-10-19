@@ -1,3 +1,3 @@
 [submodule "templates"]
 	path = templates
-	url = git@github.com:ODiogoSilva/templates.git
+	url = https://github.com/ODiogoSilva/templates.git 
