@@ -466,7 +466,7 @@ process assembly_mapping {
     set fastq_id, file(fastq_1), file(fastq_2), file(assembly) from assembly_mapping_input
 
     output:
-    set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' into mapping_coverage
+    set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into mapping_coverage
 
     when:
     params.stop_at != "assembly_mapping"
@@ -480,6 +480,9 @@ process assembly_mapping {
     parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
     parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
     rm *.tab
+    if [ -f "coverages.tsv" ]; then
+    echo pass > assembly_mapping_status
+    fi
     """
 }
 
