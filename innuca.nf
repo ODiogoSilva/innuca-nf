@@ -481,8 +481,11 @@ process assembly_mapping {
     parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
     parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
     rm *.tab
-    if [ -f "coverages.tsv" ]; then
-    echo pass > assembly_mapping_status
+    if [ -f "coverages.tsv" ]
+    then
+        echo pass > assembly_mapping_status
+    else
+        echo fail > assembly_mapping_status
     fi
     """
 }
@@ -623,7 +626,8 @@ process status {
     input:
     set fastq_id, task_name, status from fastqc_status.mix(trimmomatic_status,
                                                            fastqc_status_2,
-                                                           spades_status)
+                                                           spades_status,
+                                                           assembly_mapping_status)
 
     output:
     file 'status_*' into master_status
