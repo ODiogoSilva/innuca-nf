@@ -539,6 +539,13 @@ process pilon {
 }
 
 
+// Post assembly processes that required an assembly file
+mlst_input = Channel.create()
+prokka_input = Channel.create()
+// For last assembly channel
+pilon_processed.into{ mlst_input;prokka_input }
+
+
 process pilon_report {
 
     tag { fastq_id }
@@ -582,7 +589,7 @@ process mlst {
     cpus 1
 
     input:
-    set fastq_id, file(assembly) from pilon_processed
+    set fastq_id, file(assembly) from mlst_input
 
     output:
     file '*.mlst.txt' into mlst_result
@@ -606,6 +613,20 @@ process compile_mlst {
     """
     cat $res >> mlst_report.tsv
     """
+}
+
+
+process prokka {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly) from prokka_input
+
+    """
+    prokka $assembly --outdir $fastq_id
+    """
+
 }
 
 
