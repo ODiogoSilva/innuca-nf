@@ -624,7 +624,7 @@ process prokka {
     set fastq_id, file(assembly) from prokka_input
 
     """
-    prokka $assembly --outdir $fastq_id
+    prokka $assembly --outdir $fastq_id --cpus $task.cpus
     """
 
 }
