@@ -616,18 +616,18 @@ process compile_mlst {
 }
 
 
-process prokka {
-
-    tag { fastq_id }
-
-    input:
-    set fastq_id, file(assembly) from prokka_input
-
-    """
-    prokka $assembly --outdir $fastq_id --cpus $task.cpus
-    """
-
-}
+//process prokka {
+//
+//    tag { fastq_id }
+//
+//    input:
+//    set fastq_id, file(assembly) from prokka_input
+//
+//    """
+//    prokka $assembly --outdir $fastq_id --cpus $task.cpus
+//    """
+//
+//}
 
 
 // LISTENER PROCESSES
