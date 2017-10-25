@@ -1,16 +1,26 @@
 #!/usr/bin/nextflow
 
+import Helper
+
+// Pipeline version
+version = "0.1"
+
+Help.print_help(version)
+
+nsamples = file(params.fastq).size()
+Help.start_info(version, nsamples)
+
 // SETTING CHANNELS //
 // GENERAL PARAMS //
-nsamples = file(params.fastq_files).size()
+
 // Channel for FastQ files
-fastq_raw = Channel.fromFilePairs(params.fastq_files)
+fastq_raw = Channel.fromFilePairs(params.fastq)
 // Channel for expected genome size
 genome_size = Channel
-                .value(params.genome_size)
+                .value(params.genomeSize)
 // Channel for minimum coverage threshold
 min_coverage = Channel
-                .value(params.min_coverage)
+                .value(params.minCoverage)
 
 // FASTQC CHANNELS //
 // Channel for adapters file
@@ -19,25 +29,25 @@ adapters = Channel
 
 // TRIMMOMATIC CHANNELS //
 trimmomatic_opts = Channel
-                .value([params.trim_sliding_window,
-                        params.trim_leading,
-                        params.trim_trailing,
-                        params.tim_min_length])
+                .value([params.trimSlidingWindow,
+                        params.trimLeading,
+                        params.trimTrailing,
+                        params.trimMinLength])
 
 // SPADES CHANNELS //
 spades_opts = Channel
-                .value([params.spades_min_coverage,
-                        params.spades_min_kmer_coverage])
+                .value([params.spadesMinCoverage,
+                        params.spadesMinKmerCoverage])
 spades_kmers = Channel
-                .value(params.spades_kmers)
+                .value(params.spadesKmers)
 
 process_spades_opts = Channel
-                .value([params.spades_min_contig_len,
+                .value([params.spadesMinContigLen,
                         params.spades_min_kmer_coverage])
 
 // ASSEMBLY MAPPING CHANNELS //
 assembly_mapping_opts = Channel
-                .value(params.min_assembly_coverage)
+                .value(params.minAssemblyCoverage)
 
 /** INTEGRITY_COVERAGE - MAIN
 This process will check the integrity, encoding and get the estimated
@@ -155,7 +165,7 @@ process fastqc {
     set fastq_id, val("fastqc"), file("fastq_status") into fastqc_status
 
     when:
-    params.stop_at != "fastqc"
+    params.stopAt != "fastqc"
 
     script:
     template "fastqc.py"
@@ -233,7 +243,7 @@ process trimmomatic {
     file '*_trimlog.txt' optional true into trimmomatic_log
 
     when:
-    params.stop_at != "trimmomatic"
+    params.stopAt != "trimmomatic"
 
     script:
     template "trimmomatic.py"
@@ -340,7 +350,7 @@ process fastqc {
     set fastq_id, val("fastqc2"), file("fastq_status") into fastqc_status_2
 
     when:
-    params.stop_at != "fastqc2"
+    params.stopAt != "fastqc2"
 
     script:
     template "fastqc.py"
@@ -368,7 +378,7 @@ process spades {
     set fastq_id, val("spades"), file("spades_status") into spades_status
 
     when:
-    params.stop_at != "spades"
+    params.stopAt != "spades"
 
     script:
     template "spades.py"
@@ -434,7 +444,7 @@ process process_spades {
     file '*.report.csv'
 
     when:
-    params.stop_at != "process_spades"
+    params.stopAt != "process_spades"
 
     script:
     template "process_spades.py"
@@ -470,7 +480,7 @@ process assembly_mapping {
     set fastq_id, val("assembly_mapping"), file("assembly_mapping_status") into assembly_mapping_status
 
     when:
-    params.stop_at != "assembly_mapping"
+    params.stopAt != "assembly_mapping"
 
     script:
     """
@@ -596,7 +606,7 @@ process mlst {
     file '*.mlst.txt' into mlst_result
 
     when:
-    params.mlst_run  == true
+    params.mlstRun  == true
 
     script:
     """
@@ -625,28 +635,27 @@ process compile_mlst {
 }
 
 
-process abricate {
-
-    tag { fastq_id }
-    publishDir "results/abricate/${fastq_id}"
-    cache false
-
-    input:
-    set fastq_id, file(assembly) from abricate_input
-    each db from params.abricate_databases
-
-    output:
-    file '*.tsv'
-
-    when:
-    params.abricate_run == true
-
-    script:
-    """
-    abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
-    """
-
-}
+//process abricate {
+//
+//    tag { fastq_id }
+//    publishDir "results/abricate/${fastq_id}"
+//
+//    input:
+//    set fastq_id, file(assembly) from abricate_input
+//    each db from params.abricateDatabases
+//
+//    output:
+//    file '*.tsv'
+//
+//    when:
+//    params.abricateRun == true
+//
+//    script:
+//    """
+//    abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
+//    """
+//
+//}
 
 
 //process prokka {
@@ -657,7 +666,8 @@ process abricate {
 //    set fastq_id, file(assembly) from prokka_input
 //
 //    """
-//    prokka $assembly --outdir $fastq_id --cpus $task.cpus
+//    prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
+//           --rfam --rnammer --locustag ${fastq_id}p --increment 10 $assembly
 //    """
 //
 //}
