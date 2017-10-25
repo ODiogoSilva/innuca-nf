@@ -542,8 +542,9 @@ process pilon {
 // Post assembly processes that required an assembly file
 mlst_input = Channel.create()
 prokka_input = Channel.create()
+abricate_input = Channel.create()
 // For last assembly channel
-pilon_processed.into{ mlst_input;prokka_input }
+pilon_processed.into{ mlst_input;prokka_input;abricate_input }
 
 
 process pilon_report {
@@ -594,6 +595,10 @@ process mlst {
     output:
     file '*.mlst.txt' into mlst_result
 
+    when:
+    params.mlst_run  == true
+
+    script:
     """
     mlst $assembly >> ${fastq_id}.mlst.txt
     """
@@ -610,9 +615,37 @@ process compile_mlst {
     output:
     file "mlst_report.tsv"
 
+    when:
+    params.abricate_run == true
+
+    script:
     """
     cat $res >> mlst_report.tsv
     """
+}
+
+
+process abricate {
+
+    tag { fastq_id }
+    publishDir "results/abricate/${fastq_id}"
+    cache false
+
+    input:
+    set fastq_id, file(assembly) from abricate_input
+    each db from params.abricate_databases
+
+    output:
+    file '*.tsv'
+
+    when:
+    params.abricate_run == true
+
+    script:
+    """
+    abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
+    """
+
 }
 
 
