@@ -5,7 +5,12 @@ import Helper
 // Pipeline version
 version = "0.1"
 
-Help.print_help(version)
+params.help = false
+if (params.help){
+    Help.print_help(version, params)
+    exit 0
+}
+
 
 nsamples = file(params.fastq).size()
 Help.start_info(version, nsamples)
@@ -635,27 +640,27 @@ process compile_mlst {
 }
 
 
-//process abricate {
-//
-//    tag { fastq_id }
-//    publishDir "results/abricate/${fastq_id}"
-//
-//    input:
-//    set fastq_id, file(assembly) from abricate_input
-//    each db from params.abricateDatabases
-//
-//    output:
-//    file '*.tsv'
-//
-//    when:
-//    params.abricateRun == true
-//
-//    script:
-//    """
-//    abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
-//    """
-//
-//}
+process abricate {
+
+    tag { fastq_id }
+    publishDir "results/abricate/${fastq_id}"
+
+    input:
+    set fastq_id, file(assembly) from abricate_input
+    each db from params.abricateDatabases
+
+    output:
+    file '*.tsv'
+
+    when:
+    params.abricateRun == true
+
+    script:
+    """
+    abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
+    """
+
+}
 
 
 //process prokka {
