@@ -665,19 +665,19 @@ process abricate {
 }
 
 
-//process prokka {
-//
-//    tag { fastq_id }
-//
-//    input:
-//    set fastq_id, file(assembly) from prokka_input
-//
-//    """
-//    prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
-//           --rfam --rnammer --locustag ${fastq_id}p --increment 10 $assembly
-//    """
-//
-//}
+process prokka {
+
+    tag { fastq_id }
+
+    input:
+    set fastq_id, file(assembly) from prokka_input
+
+    """
+    prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
+           --locustag ${fastq_id}p --increment 10 $assembly
+    """
+
+}
 
 
 // LISTENER PROCESSES
