@@ -1,6 +1,7 @@
 #!/usr/bin/nextflow
 
 import Helper
+import CheckParams
 
 // Pipeline version
 version = "0.1"
@@ -11,6 +12,7 @@ if (params.help){
     exit 0
 }
 
+CheckParams.check(params)
 
 nsamples = file(params.fastq).size()
 Help.start_info(version, nsamples, "$workflow.start", "$workflow.profile")
