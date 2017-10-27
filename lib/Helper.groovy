@@ -1,6 +1,7 @@
 class Help {
 
-    static def start_info(String ver, int fastq) {
+    static def start_info(String ver, int fastq, String time,
+                          String profile) {
 
         int nsamples = fastq / 2
 
@@ -13,10 +14,10 @@ class Help {
         println " Input samples               : $nsamples"
         println " Reports are found in        : ./reports"
         println " Results are found in        : ./results"
+        println " Profile                     : $profile"
         println ""
-        println "Starting pipeline..."
+        println "Starting pipeline at $time"
         println ""
-
 
     }
 
@@ -29,6 +30,7 @@ class Help {
         println "A nextflow implementation of INNUENDO quality control of"
         println "reads, de novo assembly and contigs quality assessment,"
         println "and possible contamination search"
+        println ""
         println ""
         println "Usage: "
         println "    nextflow run odiogosilva/innuca-nf"
@@ -48,7 +50,6 @@ class Help {
         println "       --trimMinLength             Drop the read if it is below a specified length (default: $params.trimMinLength)"
         println ""
         println "Spades options:"
-        println ""
         println "       --spadesMinCoverage         The minimum number of reads to consider an edge in the de Bruijn graph during the assembly (default: $params.spadesMinCoverage)"
         println "       --spadesMinKmerCoverage     Minimum contigs K-mer coverage. After assembly only keep contigs with reported k-mer coverage equal or above this value (default: $params.spadesMinKmerCoverage)"
         println "       --spadesKmers               If 'auto' the SPAdes k-mer lengths will be determined from the maximum read length of each assembly. If 'default', SPAdes will use the default k-mer lengths. (default: $params.spadesKmers)"
