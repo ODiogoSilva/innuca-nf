@@ -13,7 +13,7 @@ if (params.help){
 
 
 nsamples = file(params.fastq).size()
-Help.start_info(version, nsamples)
+Help.start_info(version, nsamples, "$workflow.start", "$workflow.profile")
 
 // SETTING CHANNELS //
 // GENERAL PARAMS //
@@ -48,7 +48,7 @@ spades_kmers = Channel
 
 process_spades_opts = Channel
                 .value([params.spadesMinContigLen,
-                        params.spades_min_kmer_coverage])
+                        params.spadesMinKmerCoverage])
 
 // ASSEMBLY MAPPING CHANNELS //
 assembly_mapping_opts = Channel
