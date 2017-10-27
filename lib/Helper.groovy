@@ -21,6 +21,20 @@ class Help {
 
     }
 
+    static void complete_info(nextflow.script.WorkflowMetadata wf) {
+
+        println ""
+        println "Pipeline execution summary"
+        println "=========================="
+        println "Completed at                 : $wf.complete"
+        println "Duration                     : $wf.duration"
+        println "Success                      : $wf.success"
+        println "Work directory               : $wf.workDir"
+        println "Exit status                  : $wf.exitStatus"
+        println ""
+
+    }
+
     static def print_help(String ver, Map params) {
 
         println ""

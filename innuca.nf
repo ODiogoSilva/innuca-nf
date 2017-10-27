@@ -631,7 +631,7 @@ process compile_mlst {
     file "mlst_report.tsv"
 
     when:
-    params.abricate_run == true
+    params.mlstRun == true
 
     script:
     """
@@ -721,3 +721,6 @@ process compile_status {
     """
 }
 
+workflow.onComplete{
+    Help.complete_info(workflow)
+}
