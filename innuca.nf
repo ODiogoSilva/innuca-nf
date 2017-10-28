@@ -194,7 +194,7 @@ process fastqc_report {
 
     output:
     set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
-    file 'report' into trim_rep
+    file '*report' into trim_rep
     file "${fastq_id}_*_summary.txt" optional true
 
     script:
