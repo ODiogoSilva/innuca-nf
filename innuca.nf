@@ -674,7 +674,7 @@ process prokka {
 
     """
     prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
-           --locustag ${fastq_id}p --increment 10 $assembly
+           --increment 10 $assembly
     """
 
 }
