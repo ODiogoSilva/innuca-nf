@@ -187,10 +187,11 @@ process fastqc_report {
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
-    publishDir 'reports/fastqc/', pattern: '*summary.txt', mode: 'copy'
+    publishDir 'reports/fastqc/run_1/', pattern: '*summary.txt', mode: 'copy'
 
     input:
     set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed
+    val opts from Channel.value("--ignore-tests")
 
     output:
     set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
@@ -201,15 +202,6 @@ process fastqc_report {
     script:
     template "fastqc_report.py"
 
-}
-
-
-// Triage of samples with bad health according to FastQC report
-fail_fastqc_report = Channel.create()
-pass_fastqc_report = Channel.create()
-
-fastqc_trim.choice(fail_fastqc_report, pass_fastqc_report) {
-    a -> a[2].text == "pass" ? 1 : 0
 }
 
 
@@ -234,7 +226,7 @@ process trim_report {
 }
 
 
-process fastqc_report_status {
+process compile_fastqc_status {
 
     publishDir 'reports/fastqc/', mode: 'copy'
 
@@ -242,11 +234,11 @@ process fastqc_report_status {
     file rep from fastqc_report_status.collect()
 
     output:
-    file 'FastQC_report.csv'
+    file 'FastQC_1run_report.csv'
 
     """
-    echo Sample, Failed? >> FastQC_report.csv
-    cat $rep >> FastQC_report.csv
+    echo Sample, Failed? >> FastQC_1run_report.csv
+    cat $rep >> FastQC_1run_report.csv
     """
 
 }
@@ -261,7 +253,7 @@ process trimmomatic {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(fastq_pair), trim_range, phred from pass_fastqc_report.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
+    set fastq_id, file(fastq_pair), trim_range, phred from fastqc_trim.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
     val opts from trimmomatic_opts
 
     output:
@@ -384,6 +376,59 @@ process fastqc2 {
 }
 
 
+process fastqc2_report {
+
+    tag { fastq_id }
+    // This process can only use a single CPU
+    cpus 1
+    publishDir 'reports/fastqc/run_2/', pattern: '*summary.txt', mode: 'copy'
+
+    input:
+    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed_2
+    val opts from Channel.value("")
+
+    output:
+    set fastq_id, file(fastq_pair), 'fastqc_health' into fastqc_status2
+    file '*_trim_report' into trim_rep2
+    file "*_status_report" into fastqc_report_status2
+    file "${fastq_id}_*_summary.txt" optional true
+
+    script:
+    template "fastqc_report.py"
+
+}
+
+
+process compile_fastqc_status2 {
+
+    publishDir 'reports/fastqc/', mode: 'copy'
+
+    input:
+    file rep from fastqc_report_status2.collect()
+
+    output:
+    file 'FastQC_2run_report.csv'
+
+    """
+    echo Sample, Failed? >> FastQC_2run_report.csv
+    cat $rep >> FastQC_2run_report.csv
+    """
+
+}
+
+// Triage of samples with bad health according to FastQC report
+fail_fastqc2_report = Channel.create()
+pass_fastqc2_report = Channel.create()
+
+fastqc_status2.choice(fail_fastqc2_report, pass_fastqc2_report) {
+    a -> a[2].text == "pass" ? 1 : 0
+}
+
+fastqc2_good = Channel.create()
+pass_fastqc2_report
+        .map{ [it[0], it[1]] }
+        .into(fastqc2_good)
+
 /** SPADES - MAIN
 This process performs the FastQ assembly using SPAdes. Besides the FastQ
 files, this process requires an estimate of the maximum contig len
@@ -396,7 +441,7 @@ process spades {
     publishDir 'results/assembly/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
     input:
-    set fastq_id, file(fastq_pair), max_len from fastqc_processed_2.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
+    set fastq_id, file(fastq_pair), max_len from fastqc2_good.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
     val opts from spades_opts
     val kmers from spades_kmers
 
