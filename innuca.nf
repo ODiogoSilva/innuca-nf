@@ -561,6 +561,8 @@ process assembly_mapping {
     samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam
     samtools index sorted.bam
     parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
+    # Insert 0 coverage count in empty files. See Issue #2
+    find . -size 0 -print0 | xargs -0 -I{} sh -c 'echo -e 0"\t"0"\t"0 > "{}"'
     parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
     rm *.tab
     if [ -f "coverages.tsv" ]
