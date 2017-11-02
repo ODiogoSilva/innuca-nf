@@ -202,6 +202,16 @@ process fastqc_report {
 
 }
 
+
+// Triage of samples with bad health according to FastQC report
+fail_fastqc_report = Channel.create()
+pass_fastqc_report = Channel.create()
+
+fastqc_trim.choice(fail_fastqc_report, pass_fastqc_report) {
+    a -> a[2].text == "pass" ? 1 : 0
+}
+
+
 /** TRIM_REPORT - PLUG-IN
 This will collect the optimal trim points assessed by the fastqc_report
 process and write the results of all samples in a single csv file
@@ -220,15 +230,6 @@ process trim_report {
     echo Sample,Trim begin, Trim end >> FastQC_trim_report.csv
     cat $trim >> FastQC_trim_report.csv
     """
-}
-
-
-// Triage of samples with bad health according to FastQC report
-fail_fastqc_report = Channel.create()
-pass_fastqc_report = Channel.create()
-
-fastqc_trim.choice(fail_fastqc_report, pass_fastqc_report) {
-    a -> a[2].text == "pass" ? 0 : 1
 }
 
 
