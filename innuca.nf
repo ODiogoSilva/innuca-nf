@@ -194,7 +194,8 @@ process fastqc_report {
 
     output:
     set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
-    file '*report' into trim_rep
+    file '*_trim_report' into trim_rep
+    file "*_status_report" into fastqc_report_status
     file "${fastq_id}_*_summary.txt" optional true
 
     script:
@@ -230,6 +231,24 @@ process trim_report {
     echo Sample,Trim begin, Trim end >> FastQC_trim_report.csv
     cat $trim >> FastQC_trim_report.csv
     """
+}
+
+
+process fastqc_report_status {
+
+    publishDir 'reports/fastqc/', mode: 'copy'
+
+    input:
+    file rep from fastqc_report_status.collect()
+
+    output:
+    file 'FastQC_report.csv'
+
+    """
+    echo Sample, Failed? >> FastQC_report.csv
+    cat $rep >> FastQC_report.csv
+    """
+
 }
 
 
