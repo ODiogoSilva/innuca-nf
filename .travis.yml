@@ -19,7 +19,7 @@ install:
   - conda install fastqc
 
 script:
-  - cd templates && py.test --cov=./
+  - py.test --cov=./
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
