@@ -373,7 +373,7 @@ options for SPAdes (see spades.py template).
 process spades {
 
     tag { fastq_id }
-    publishDir 'results/assemblies/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
+    publishDir 'results/assembly/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
     input:
     set fastq_id, file(fastq_pair), max_len from fastqc_processed_2.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
@@ -540,7 +540,7 @@ process pilon {
 
     tag { fastq_id }
     echo false
-    publishDir 'results/assemblies/pilon/', mode: 'copy'
+    publishDir 'results/assembly/pilon/', mode: 'copy'
 
     input:
     set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping
@@ -549,8 +549,10 @@ process pilon {
     set fastq_id, '*_polished.assembly.fasta' into pilon_processed, p_report
 
 
+    script:
     """
-    java -jar /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf --threads $task.cpus
+    pilon_mem=${String.valueOf(task.memory).substring(0, String.valueOf(task.memory).length() - 1).replaceAll("\\s", "")}
+    java -jar -Xms256m -Xmx\${pilon_mem} /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf --threads $task.cpus
     """
 
 }
@@ -624,7 +626,7 @@ process mlst {
 
 process compile_mlst {
 
-    publishDir "results/mlst/"
+    publishDir "results/annotation/mlst/"
 
     input:
     file res from mlst_result.collect()
@@ -645,7 +647,7 @@ process compile_mlst {
 process abricate {
 
     tag { fastq_id }
-    publishDir "results/abricate/${fastq_id}"
+    publishDir "results/annotation/abricate/${fastq_id}"
 
     input:
     set fastq_id, file(assembly) from abricate_input
@@ -668,7 +670,7 @@ process abricate {
 process prokka {
 
     tag { fastq_id }
-    publishDir "results/prokka/${fastq_id}"
+    publishDir "results/annotation/prokka/${fastq_id}"
 
     input:
     set fastq_id, file(assembly) from prokka_input
