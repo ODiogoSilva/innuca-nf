@@ -344,7 +344,7 @@ process report_coverage_2 {
 This process will perform the second fastQC analysis for each sample.
 In this run, the output files of FastQC are sent to the output channel
 */
-process fastqc {
+process fastqc2 {
 
     tag { fastq_id }
 
@@ -580,7 +580,7 @@ process pilon_report {
 }
 
 
-process compile_spades_report {
+process compile_pilon_report {
 
     publishDir "reports/assembly/pilon/", mode: 'copy'
 
@@ -668,9 +668,13 @@ process abricate {
 process prokka {
 
     tag { fastq_id }
+    publishDir "results/prokka/${fastq_id}"
 
     input:
     set fastq_id, file(assembly) from prokka_input
+
+    output:
+    file "${fastq_id}/*"
 
     """
     prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \

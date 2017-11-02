@@ -7,7 +7,6 @@ data/
 logs/
 reports/
 timeline_inuca.html
-
 .cache/
 innuca-dag.pdf
 innuca-timeline.html
@@ -15,3 +14,5 @@ results/
 templates/.cache/
 templates/__pycache__/
 templates/tests/__pycache__/
+doc/.ropeproject
+doc/build
