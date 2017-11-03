@@ -631,8 +631,9 @@ process pilon {
 MAIN_mlst_in = Channel.create()
 MAIN_prokka_in = Channel.create()
 MAIN_abricate_in = Channel.create()
+MAIN_chewbbaca = Channel.create()
 // For last assembly channel
-MAIN_pilon_out.into{ MAIN_mlst_in;MAIN_prokka_in;MAIN_abricate_in }
+MAIN_pilon_out.into{ MAIN_mlst_in;MAIN_prokka_in;MAIN_abricate_in;MAIN_chewbbaca }
 
 
 process pilon_report {
@@ -750,6 +751,27 @@ process prokka {
     """
     prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
            --increment 10 $assembly
+    """
+
+}
+
+
+process chewbbaca {
+
+    tag { fastq_id }
+    maxForks 1
+    publishDir "results/chewbbaca"
+
+    input:
+    set fastq_id, file(assembly) from MAIN_chewbbaca
+    file schema from Channel.fromPath(params.schema)
+
+    output:
+    file 'chew_results'
+
+    """
+    echo $assembly >> input_file.txt
+    chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
     """
 
 }
