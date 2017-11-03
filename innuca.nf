@@ -685,8 +685,7 @@ process mlst {
     file '*.mlst.txt' into MAIN_mlst_out
 
     when:
-    params.mlstRun  == true
-    params.annotationRun == true
+    params.mlstRun  == true && params.annotationRun
 
     script:
     """
@@ -706,7 +705,7 @@ process compile_mlst {
     file "mlst_report.tsv"
 
     when:
-    params.mlstRun == true
+    params.mlstRun == true && params.annotationRun
 
     script:
     """
@@ -728,7 +727,7 @@ process abricate {
     file '*.tsv'
 
     when:
-    params.abricateRun == true
+    params.abricateRun == true && params.annotationRun
 
     script:
     """
@@ -750,7 +749,7 @@ process prokka {
     file "${fastq_id}/*"
 
     when:
-    params.prokkaRun == true
+    params.prokkaRun == true && params.annotationRun
 
     script:
     """
