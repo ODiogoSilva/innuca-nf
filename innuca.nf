@@ -760,7 +760,8 @@ process chewbbaca {
 
     tag { fastq_id }
     maxForks 1
-    publishDir "results/chewbbaca"
+    publishDir "results/chewbbaca/${fastq_id}"
+    echo false
 
     input:
     set fastq_id, file(assembly) from MAIN_chewbbaca
