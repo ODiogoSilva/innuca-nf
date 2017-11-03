@@ -776,7 +776,7 @@ process chewbbaca {
     file 'chew_results'
 
     when:
-    params.chewbbacaRun = true
+    params.chewbbacaRun == true
 
     script:
     """
