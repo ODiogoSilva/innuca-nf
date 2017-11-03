@@ -758,14 +758,15 @@ process prokka {
 
 process chewbbaca {
 
-    tag { fastq_id }
     maxForks 1
-    publishDir "results/chewbbaca/${fastq_id}"
+    tag { fastq_id }
     echo false
+    scratch true
+    publishDir "results/chewbbaca/${fastq_id}"
 
     input:
     set fastq_id, file(assembly) from MAIN_chewbbaca
-    file schema from Channel.fromPath(params.schema)
+    each file(schema) from Channel.fromPath(params.schema)
 
     output:
     file 'chew_results'
