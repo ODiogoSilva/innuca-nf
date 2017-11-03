@@ -713,7 +713,7 @@ process compile_mlst {
 
 process abricate {
 
-    tag { fastq_id }
+    tag { "${fastq_id} ${db}" }
     publishDir "results/annotation/abricate/${fastq_id}"
 
     input:
