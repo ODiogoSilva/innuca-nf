@@ -5,7 +5,7 @@ import CheckParams
 
 // Pipeline version
 if (workflow.commitId){
-    version = "0.1 $workflow.commitId"
+    version = "0.1 $workflow.revision"
 } else {
     version = "0.1 (local version)"
 }
