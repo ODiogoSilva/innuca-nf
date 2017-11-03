@@ -748,6 +748,10 @@ process prokka {
     output:
     file "${fastq_id}/*"
 
+    when:
+    params.prokkaRun == true
+
+    script:
     """
     prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
            --increment 10 $assembly
@@ -766,11 +770,15 @@ process chewbbaca {
 
     input:
     set fastq_id, file(assembly) from MAIN_chewbbaca
-    each file(schema) from Channel.fromPath(params.schema)
+    each file(schema) from Channel.fromPath(params.schema_path)
 
     output:
     file 'chew_results'
 
+    when:
+    chewbbacaRun = true
+
+    script:
     """
     echo $assembly >> input_file.txt
     chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
