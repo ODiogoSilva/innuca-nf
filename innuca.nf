@@ -17,43 +17,50 @@ CheckParams.check(params)
 nsamples = file(params.fastq).size()
 Help.start_info(version, nsamples, "$workflow.start", "$workflow.profile")
 
+// CHANNEL NOMENCLATURE //
+// IN_* : Input channels, created from params options
+// MAIN_* : The main pipeline channel. Must always contain a fastq_id and the sequence data
+// LOG_* : Logging or reporting channels that are meant for terminal processes
+// SIDE_* : Channels that are meant to merge with the MAIN channel downstream in the pipeline
+// STATUS_* : Contain only the report of the status for any given process
+
 // SETTING CHANNELS //
 // GENERAL PARAMS //
 
 // Channel for FastQ files
-fastq_raw = Channel.fromFilePairs(params.fastq)
+IN_fastq_raw = Channel.fromFilePairs(params.fastq)
 // Channel for expected genome size
-genome_size = Channel
+IN_genome_size = Channel
                 .value(params.genomeSize)
 // Channel for minimum coverage threshold
-min_coverage = Channel
+IN_min_coverage = Channel
                 .value(params.minCoverage)
 
 // FASTQC CHANNELS //
 // Channel for adapters file
-adapters = Channel
+IN_adapters = Channel
                 .value(params.adapters)
 
 // TRIMMOMATIC CHANNELS //
-trimmomatic_opts = Channel
+IN_trimmomatic_opts = Channel
                 .value([params.trimSlidingWindow,
                         params.trimLeading,
                         params.trimTrailing,
                         params.trimMinLength])
 
 // SPADES CHANNELS //
-spades_opts = Channel
+IN_spades_opts = Channel
                 .value([params.spadesMinCoverage,
                         params.spadesMinKmerCoverage])
-spades_kmers = Channel
+IN_spades_kmers = Channel
                 .value(params.spadesKmers)
 
-process_spades_opts = Channel
+IN_process_spades_opts = Channel
                 .value([params.spadesMinContigLen,
                         params.spadesMinKmerCoverage])
 
 // ASSEMBLY MAPPING CHANNELS //
-assembly_mapping_opts = Channel
+IN_assembly_mapping_opts = Channel
                 .value(params.minAssemblyCoverage)
 
 /** INTEGRITY_COVERAGE - MAIN
@@ -68,9 +75,9 @@ process integrity_coverage {
     cpus 1
 
 	input:
-	set fastq_id, file(fastq_pair) from fastq_raw
-	val gsize from genome_size
-	val cov from min_coverage
+	set fastq_id, file(fastq_pair) from IN_fastq_raw
+	val gsize from IN_genome_size
+	val cov from IN_min_coverage
 	// This channel is for the custom options of the integrity_coverage.py
 	// script. See the script's documentation for more information.
 	val opts from Channel.value('')
@@ -80,8 +87,8 @@ process integrity_coverage {
 	    file(fastq_pair),
 	    file('*_encoding'),
 	    file('*_phred'),
-	    file('*_coverage') into integrity_processed
-	file('*_report') into cov_report
+	    file('*_coverage') into MAIN_integrity
+	file('*_report') into LOG_report_coverage1
 
 	script:
 	template "integrity_coverage.py"
@@ -89,25 +96,24 @@ process integrity_coverage {
 }
 
 // TRIAGE OF CORRUPTED SAMPLES
-corrupted = Channel.create()
-sample_ok = Channel.create()
+LOG_corrupted = Channel.create()
+MAIN_PreCoverageCheck = Channel.create()
 // Corrupted samples have the 2nd value with 'corrupt'
-integrity_processed.choice(corrupted, sample_ok) {
+MAIN_integrity.choice(LOG_corrupted, MAIN_PreCoverageCheck) {
     a -> a[2].text == "corrupt" ? 0 : 1
 }
 
 // TRIAGE OF LOW COVERAGE SAMPLES
-sample_good = Channel.create()
-sample_listen = Channel.create()
-sample_phred = Channel.create()
+MAIN_fastqc_in = Channel.create()
+SIDE_phred = Channel.create()
 
-sample_ok
+MAIN_PreCoverageCheck
 // Low coverage samples have the 4th value of the Channel with 'fail'
     .filter{ it[4].text != "fail" }
 // For the channel to proceed with FastQ in 'sample_good' and the
-// Phred scores for each sample in 'sample_phred'
-    .separate(sample_good, sample_listen, sample_phred){
-        a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3].text] ]
+// Phred scores for each sample in 'SIDE_phred'
+    .separate(MAIN_fastqc_in, SIDE_phred){
+        a -> [ [a[0], a[1]], [a[0], a[3].text] ]
     }
 
 /** REPORT_COVERAGE - PLUG-IN
@@ -121,7 +127,7 @@ process report_coverage {
     publishDir 'reports/coverage/'
 
     input:
-    file(report) from cov_report.filter{ it.text != "corrupt" }.collect()
+    file(report) from LOG_report_coverage1.filter{ it.text != "corrupt" }.collect()
 
     output:
     file 'estimated_coverage_initial.csv'
@@ -143,7 +149,7 @@ process report_corrupt {
     publishDir 'reports/corrupted/'
 
     input:
-    val fastq_id from corrupted.collect{it[0]}
+    val fastq_id from LOG_corrupted.collect{it[0]}
 
     output:
     file 'corrupted_samples.txt'
@@ -164,12 +170,12 @@ process fastqc {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(fastq_pair) from sample_good
+    set fastq_id, file(fastq_pair) from MAIN_fastqc_in
     val ad from Channel.value('None')
 
     output:
-    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed
-    set fastq_id, val("fastqc"), file("fastq_status") into fastqc_status
+    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out
+    set fastq_id, val("fastqc"), file("fastq_status") into STATUS_fastqc
 
     when:
     params.stopAt != "fastqc"
@@ -190,13 +196,13 @@ process fastqc_report {
     publishDir 'reports/fastqc/run_1/', pattern: '*summary.txt', mode: 'copy'
 
     input:
-    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed
+    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from MAIN_fastqc_out
     val opts from Channel.value("--ignore-tests")
 
     output:
-    set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into fastqc_trim
-    file '*_trim_report' into trim_rep
-    file "*_status_report" into fastqc_report_status
+    set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into MAIN_fastqc_trim
+    file '*_trim_report' into LOG_trim
+    file "*_status_report" into LOG_fastqc_report
     file "${fastq_id}_*_summary.txt" optional true
 
     script:
@@ -214,7 +220,7 @@ process trim_report {
     publishDir 'reports/fastqc/', mode: 'copy'
 
     input:
-    file trim from trim_rep.collect()
+    file trim from LOG_trim.collect()
 
     output:
     file "FastQC_trim_report.csv"
@@ -231,7 +237,7 @@ process compile_fastqc_status {
     publishDir 'reports/fastqc/', mode: 'copy'
 
     input:
-    file rep from fastqc_report_status.collect()
+    file rep from LOG_fastqc_report.collect()
 
     output:
     file 'FastQC_1run_report.csv'
@@ -253,13 +259,13 @@ process trimmomatic {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(fastq_pair), trim_range, phred from fastqc_trim.phase(sample_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
-    val opts from trimmomatic_opts
+    set fastq_id, file(fastq_pair), trim_range, phred from MAIN_fastqc_trim.phase(SIDE_phred).map{ [it[0][0], it[0][1], file(it[0][3]).text, it[1][1]] }
+    val opts from IN_trimmomatic_opts
 
     output:
-    set fastq_id, "${fastq_id}_*P*" optional true into trimmomatic_processed, bowtie_input
-    set fastq_id, val("trimmomatic"), file("trimmomatic_status") into trimmomatic_status
-    file '*_trimlog.txt' optional true into trimmomatic_log
+    set fastq_id, "${fastq_id}_*P*" optional true into MAIN_trimmomatic_out, SIDE_bowtie_in
+    set fastq_id, val("trimmomatic"), file("trimmomatic_status") into STATUS_trimmomatic
+    file '*_trimlog.txt' optional true into LOG_trimmomatic
 
     when:
     params.stopAt != "trimmomatic"
@@ -275,7 +281,7 @@ process trimmomatic_report {
     publishDir 'reports/trimmomatic/'
 
     input:
-    file log_files from trimmomatic_log.collect()
+    file log_files from LOG_trimmomatic.collect()
 
     output:
     file 'trimmomatic_report.csv'
@@ -296,9 +302,9 @@ process integrity_coverage_2 {
     cpus 1
 
 	input:
-	set fastq_id, file(fastq_pair) from trimmomatic_processed
-	val gsize from genome_size
-	val cov from min_coverage
+	set fastq_id, file(fastq_pair) from MAIN_trimmomatic_out
+	val gsize from IN_genome_size
+	val cov from IN_min_coverage
 	// Use -e option for skipping encoding guess
 	val opts from Channel.value('-e')
 
@@ -306,8 +312,8 @@ process integrity_coverage_2 {
 	set fastq_id,
 	    file(fastq_pair),
 	    file('*_coverage'),
-	    file('*_max_len') into integrity_processed_2
-	file('*_report') into cov_report_2
+	    file('*_max_len') into MAIN_integrity2
+	file('*_report') into LOG_report_coverage2
 
 	script:
 	template "integrity_coverage.py"
@@ -315,17 +321,16 @@ process integrity_coverage_2 {
 
 // Checking for coverage again after trimmomatic trimming.
 // Low coverage samples have the 2nd value of the Channel with 'fail'
-sample_good_2 = Channel.create()
-sample_max_len = Channel.create()
-sample_listen_2 = Channel.create()
+MAIN_fastqc_in2 = Channel.create()
+SIDE_max_len = Channel.create()
 
-integrity_processed_2
+MAIN_integrity2
 // Low coverage samples have the 2nd value of the Channel with 'fail'
     .filter{ it[2].text != "fail" }
 // For the channel to proceed with FastQ in 'sample_good' and the
-// Phred scores for each sample in 'sample_phred'
-    .separate(sample_good_2, sample_listen_2, sample_max_len){
-        a -> [ [a[0], a[1]], [a[0], a[1]], [a[0], a[3]]]
+// Phred scores for each sample in 'SIDE_phred'
+    .separate(MAIN_fastqc_in2, SIDE_max_len){
+        a -> [ [a[0], a[1]], [a[0], a[3]]]
     }
 
 
@@ -340,7 +345,7 @@ process report_coverage_2 {
     publishDir 'reports/coverage/'
 
     input:
-    file(report) from cov_report_2.filter{ it.text != "corrupt" }.collect()
+    file(report) from LOG_report_coverage2.filter{ it.text != "corrupt" }.collect()
 
     output:
     file 'estimated_coverage_second.csv'
@@ -361,12 +366,12 @@ process fastqc2 {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(fastq_pair) from sample_good_2
-    val ad from adapters
+    set fastq_id, file(fastq_pair) from MAIN_fastqc_in2
+    val ad from IN_adapters
 
     output:
-    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into fastqc_processed_2
-    set fastq_id, val("fastqc2"), file("fastq_status") into fastqc_status_2
+    set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out2
+    set fastq_id, val("fastqc2"), file("fastq_status") into STATUS_fastqc2
 
     when:
     params.stopAt != "fastqc2"
@@ -384,13 +389,12 @@ process fastqc2_report {
     publishDir 'reports/fastqc/run_2/', pattern: '*summary.txt', mode: 'copy'
 
     input:
-    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from fastqc_processed_2
+    set fastq_id, file(fastq_pair), file(result_p1), file(result_p2) from MAIN_fastqc_out2
     val opts from Channel.value("")
 
     output:
-    set fastq_id, file(fastq_pair), 'fastqc_health' into fastqc_status2
-    file '*_trim_report' into trim_rep2
-    file "*_status_report" into fastqc_report_status2
+    set fastq_id, file(fastq_pair), 'fastqc_health' into MAIN_fastqc_report
+    file "*_status_report" into LOG_fastqc_report2
     file "${fastq_id}_*_summary.txt" optional true
 
     script:
@@ -404,7 +408,7 @@ process compile_fastqc_status2 {
     publishDir 'reports/fastqc/', mode: 'copy'
 
     input:
-    file rep from fastqc_report_status2.collect()
+    file rep from LOG_fastqc_report2.collect()
 
     output:
     file 'FastQC_2run_report.csv'
@@ -416,18 +420,12 @@ process compile_fastqc_status2 {
 
 }
 
-// Triage of samples with bad health according to FastQC report
-fail_fastqc2_report = Channel.create()
-pass_fastqc2_report = Channel.create()
+MAIN_spades_in = Channel.create()
 
-fastqc_status2.choice(fail_fastqc2_report, pass_fastqc2_report) {
-    a -> a[2].text == "pass" ? 1 : 0
-}
-
-fastqc2_good = Channel.create()
-pass_fastqc2_report
+MAIN_fastqc_report
+        .filter{ it[2].text == "pass" }
         .map{ [it[0], it[1]] }
-        .into(fastqc2_good)
+        .into(MAIN_spades_in)
 
 /** SPADES - MAIN
 This process performs the FastQ assembly using SPAdes. Besides the FastQ
@@ -441,13 +439,13 @@ process spades {
     publishDir 'results/assembly/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
     input:
-    set fastq_id, file(fastq_pair), max_len from fastqc2_good.phase(sample_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
-    val opts from spades_opts
-    val kmers from spades_kmers
+    set fastq_id, file(fastq_pair), max_len from MAIN_spades_in.phase(SIDE_max_len).map{ [it[0][0], it[0][1], file(it[1][1]).text] }
+    val opts from IN_spades_opts
+    val kmers from IN_spades_kmers
 
     output:
-    set fastq_id, file('*_spades.assembly.fasta') optional true into spades_processed, s_report
-    set fastq_id, val("spades"), file("spades_status") into spades_status
+    set fastq_id, file('*_spades.assembly.fasta') optional true into MAIN_spades_out, LOG_spades
+    set fastq_id, val("spades"), file("spades_status") into STATUS_spades
 
     when:
     params.stopAt != "spades"
@@ -465,10 +463,10 @@ process spades_report {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(assembly) from s_report
+    set fastq_id, file(assembly) from LOG_spades
 
     output:
-    file "*_assembly_report.csv" into sm_report
+    file "*_assembly_report.csv" into LOG_spades_report
 
     script:
     template "assembly_report.py"
@@ -484,7 +482,7 @@ process compile_spades_report {
     publishDir "reports/assembly/spades/", mode: 'copy'
 
     input:
-    file(report) from sm_report.collect()
+    file(report) from LOG_spades_report.collect()
 
     output:
     file "spades_assembly_report.csv"
@@ -507,12 +505,12 @@ process process_spades {
     publishDir "reports/assembly/spades_filter", pattern: '*.report.csv', mode: 'copy'
 
     input:
-    set fastq_id, file(assembly) from spades_processed
-    val opts from process_spades_opts
-    val gsize from genome_size
+    set fastq_id, file(assembly) from MAIN_spades_out
+    val opts from IN_process_spades_opts
+    val gsize from IN_genome_size
 
     output:
-    set fastq_id, file('*.assembly.fasta') into spades_assembly
+    set fastq_id, file('*.assembly.fasta') into MAIN_spades_filtered
     file '*.report.csv'
 
     when:
@@ -527,11 +525,11 @@ process process_spades {
 // files and the spades assembly file.
 // The resulting channel will consist of:
 // fastq_id, fastq_1, fastq_2, assembly_file
-assembly_mapping_input = Channel.create()
-bowtie_input
-        .phase(spades_assembly)
+MAIN_am_in = Channel.create()
+SIDE_bowtie_in
+        .phase(MAIN_spades_filtered)
         .map{ [it[0][0], it[0][1][0], it[0][1][1], it[1][1]] }
-        .into(assembly_mapping_input)
+        .into(MAIN_am_in)
 
 
 /** ASSEMBLY_MAPPING - MAIN
@@ -545,11 +543,11 @@ process assembly_mapping {
     echo false
 
     input:
-    set fastq_id, file(fastq_1), file(fastq_2), file(assembly) from assembly_mapping_input
+    set fastq_id, file(fastq_1), file(fastq_2), file(assembly) from MAIN_am_in
 
     output:
-    set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into mapping_coverage
-    set fastq_id, val("assembly_mapping"), file("assembly_mapping_status") into assembly_mapping_status
+    set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into MAIN_am_out
+    set fastq_id, val("assembly_mapping"), file("assembly_mapping_status") into STATUS_am
 
     when:
     params.stopAt != "assembly_mapping"
@@ -586,12 +584,12 @@ process process_assembly_mapping {
     cpus 1
 
     input:
-    set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from mapping_coverage
-    val min_assembly_coverage from assembly_mapping_opts
-    val gsize from genome_size
+    set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from MAIN_am_out
+    val min_assembly_coverage from IN_assembly_mapping_opts
+    val gsize from IN_genome_size
 
     output:
-    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' into processed_assembly_mapping
+    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' into MAIN_pilon_in
 
     script:
     template "process_assembly_mapping.py"
@@ -610,10 +608,10 @@ process pilon {
     publishDir 'results/assembly/pilon/', mode: 'copy'
 
     input:
-    set fastq_id, file(assembly), file(bam_file), file(bam_index) from processed_assembly_mapping
+    set fastq_id, file(assembly), file(bam_file), file(bam_index) from MAIN_pilon_in
 
     output:
-    set fastq_id, '*_polished.assembly.fasta' into pilon_processed, p_report
+    set fastq_id, '*_polished.assembly.fasta' into MAIN_pilon_out, MAIN_pilon
 
 
     script:
@@ -626,11 +624,11 @@ process pilon {
 
 
 // Post assembly processes that required an assembly file
-mlst_input = Channel.create()
-prokka_input = Channel.create()
-abricate_input = Channel.create()
+MAIN_mlst_in = Channel.create()
+MAIN_prokka_in = Channel.create()
+MAIN_abricate_in = Channel.create()
 // For last assembly channel
-pilon_processed.into{ mlst_input;prokka_input;abricate_input }
+MAIN_pilon_out.into{ MAIN_mlst_in;MAIN_prokka_in;MAIN_abricate_in }
 
 
 process pilon_report {
@@ -638,10 +636,10 @@ process pilon_report {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(assembly) from p_report
+    set fastq_id, file(assembly) from MAIN_pilon
 
     output:
-    file "*_assembly_report.csv" into pm_report
+    file "*_assembly_report.csv" into MAIN_pilon_report
 
     script:
     template "assembly_report.py"
@@ -654,7 +652,7 @@ process compile_pilon_report {
     publishDir "reports/assembly/pilon/", mode: 'copy'
 
     input:
-    file(report) from pm_report.collect()
+    file(report) from MAIN_pilon_report.collect()
 
     output:
     file "pilon_assembly_report.csv"
@@ -676,10 +674,10 @@ process mlst {
     cpus 1
 
     input:
-    set fastq_id, file(assembly) from mlst_input
+    set fastq_id, file(assembly) from MAIN_mlst_in
 
     output:
-    file '*.mlst.txt' into mlst_result
+    file '*.mlst.txt' into MAIN_mlst_out
 
     when:
     params.mlstRun  == true
@@ -696,7 +694,7 @@ process compile_mlst {
     publishDir "results/annotation/mlst/"
 
     input:
-    file res from mlst_result.collect()
+    file res from MAIN_mlst_out.collect()
 
     output:
     file "mlst_report.tsv"
@@ -717,7 +715,7 @@ process abricate {
     publishDir "results/annotation/abricate/${fastq_id}"
 
     input:
-    set fastq_id, file(assembly) from abricate_input
+    set fastq_id, file(assembly) from MAIN_abricate_in
     each db from params.abricateDatabases
 
     output:
@@ -740,7 +738,7 @@ process prokka {
     publishDir "results/annotation/prokka/${fastq_id}"
 
     input:
-    set fastq_id, file(assembly) from prokka_input
+    set fastq_id, file(assembly) from MAIN_prokka_in
 
     output:
     file "${fastq_id}/*"
@@ -768,10 +766,10 @@ process status {
     tag { fastq_id }
 
     input:
-    set fastq_id, task_name, status from fastqc_status.mix(trimmomatic_status,
-                                                           fastqc_status_2,
-                                                           spades_status,
-                                                           assembly_mapping_status)
+    set fastq_id, task_name, status from STATUS_fastqc.mix(STATUS_trimmomatic,
+                                                           STATUS_fastqc2,
+                                                           STATUS_spades,
+                                                           STATUS_am)
 
     output:
     file 'status_*' into master_status
