@@ -686,6 +686,7 @@ process mlst {
 
     when:
     params.mlstRun  == true
+    params.annotationRun == true
 
     script:
     """
