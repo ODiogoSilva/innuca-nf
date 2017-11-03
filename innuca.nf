@@ -4,7 +4,11 @@ import Helper
 import CheckParams
 
 // Pipeline version
-version = "0.1"
+if (workflow.commitId){
+    version = "0.1 $workflow.commitId"
+} else {
+    version = "0.1 (local version)"
+}
 
 params.help = false
 if (params.help){

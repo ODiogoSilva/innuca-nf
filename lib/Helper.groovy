@@ -6,9 +6,9 @@ class Help {
         int nsamples = fastq / 2
 
         println ""
-        println "================================================="
+        println "============================================================"
         println " I N N U c a ~ INNUca NextFlow version $ver"
-        println "================================================="
+        println "============================================================"
         println ""
         println " Input FastQ                 : $fastq"
         println " Input samples               : $nsamples"
@@ -38,9 +38,9 @@ class Help {
     static def print_help(String ver, Map params) {
 
         println ""
-        println "========================================================="
+        println "============================================================"
         println " I N N U c a ~ INNUca NextFlow version $ver"
-        println "========================================================="
+        println "============================================================"
         println "A nextflow implementation of INNUENDO quality control of"
         println "reads, de novo assembly and contigs quality assessment,"
         println "and possible contamination search"
