@@ -74,6 +74,12 @@ and filtered here.
 */
 process integrity_coverage {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 1"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 1"
+    }
+
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
@@ -171,6 +177,12 @@ as pair_1* and pair_2* files.
 */
 process fastqc {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 2"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 2"
+    }
+
     tag { fastq_id }
 
     input:
@@ -179,7 +191,7 @@ process fastqc {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out
-    set fastq_id, val("fastqc"), file("fastq_status") into STATUS_fastqc
+    set fastq_id, val("fastqc"), file(".status") into STATUS_fastqc
 
     when:
     params.stopAt != "fastqc"
@@ -194,6 +206,12 @@ the optimal_trim information for Trimmomatic
 */
 process fastqc_report {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 3"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 3"
+    }
+
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
@@ -204,7 +222,7 @@ process fastqc_report {
     val opts from Channel.value("--ignore-tests")
 
     output:
-    set fastq_id, file(fastq_pair), 'fastqc_health', 'optimal_trim' into MAIN_fastqc_trim
+    set fastq_id, file(fastq_pair), '.status', 'optimal_trim' into MAIN_fastqc_trim
     file '*_trim_report' into LOG_trim
     file "*_status_report" into LOG_fastqc_report
     file "${fastq_id}_*_summary.txt" optional true
@@ -260,6 +278,12 @@ information on the trim_range and phred score.
 */
 process trimmomatic {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 4"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 4"
+    }
+
     tag { fastq_id }
 
     input:
@@ -268,7 +292,7 @@ process trimmomatic {
 
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into MAIN_trimmomatic_out, SIDE_bowtie_in
-    set fastq_id, val("trimmomatic"), file("trimmomatic_status") into STATUS_trimmomatic
+    set fastq_id, val("trimmomatic"), file(".status") into STATUS_trimmomatic
     file '*_trimlog.txt' optional true into LOG_trimmomatic
 
     when:
@@ -301,6 +325,12 @@ the trimmomatic trimming. Note that the encoding guessing is turned-of
 by using the '-e' option in the opts variable.
 */
 process integrity_coverage_2 {
+
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 5"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 5"
+    }
 
     tag { fastq_id }
     cpus 1
@@ -367,6 +397,12 @@ In this run, the output files of FastQC are sent to the output channel
 */
 process fastqc2 {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 6"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 6"
+    }
+
     tag { fastq_id }
 
     input:
@@ -375,7 +411,7 @@ process fastqc2 {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out2
-    set fastq_id, val("fastqc2"), file("fastq_status") into STATUS_fastqc2
+    set fastq_id, val("fastqc2"), file(".status") into STATUS_fastqc2
 
     when:
     params.stopAt != "fastqc2"
@@ -387,6 +423,12 @@ process fastqc2 {
 
 process fastqc2_report {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 7"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 7"
+    }
+
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
@@ -397,7 +439,7 @@ process fastqc2_report {
     val opts from Channel.value("")
 
     output:
-    set fastq_id, file(fastq_pair), 'fastqc_health' into MAIN_fastqc_report
+    set fastq_id, file(fastq_pair), '.status' into MAIN_fastqc_report
     file "*_status_report" into LOG_fastqc_report2
     file "${fastq_id}_*_summary.txt" optional true
 
@@ -439,6 +481,12 @@ options for SPAdes (see spades.py template).
 */
 process spades {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 8"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 8"
+    }
+
     tag { fastq_id }
     publishDir 'results/assembly/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
@@ -449,7 +497,7 @@ process spades {
 
     output:
     set fastq_id, file('*_spades.assembly.fasta') optional true into MAIN_spades_out, LOG_spades
-    set fastq_id, val("spades"), file("spades_status") into STATUS_spades
+    set fastq_id, val("spades"), file(".status") into STATUS_spades
 
     when:
     params.stopAt != "spades"
@@ -503,6 +551,12 @@ Processes and filters the SPAdes assembly according to user-specified options
 */
 process process_spades {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 9"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 9"
+    }
+
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
@@ -515,6 +569,7 @@ process process_spades {
 
     output:
     set fastq_id, file('*.assembly.fasta') into MAIN_spades_filtered
+    set fastq_id, val("process_spades"), file(".status") into STATUS_process_spades
     file '*.report.csv'
 
     when:
@@ -543,6 +598,12 @@ assembly as well as the sorted BAM file.
 */
 process assembly_mapping {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 10"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 10"
+    }
+
     tag { fastq_id }
     echo false
 
@@ -551,28 +612,32 @@ process assembly_mapping {
 
     output:
     set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into MAIN_am_out
-    set fastq_id, val("assembly_mapping"), file("assembly_mapping_status") into STATUS_am
+    set fastq_id, val("assembly_mapping"), file(".status") into STATUS_am
 
     when:
     params.stopAt != "assembly_mapping"
 
     script:
     """
-    bowtie2-build --threads ${task.cpus} $assembly genome_index
-    bowtie2 -q --very-sensitive-local --threads ${task.cpus} -x genome_index -1 $fastq_1 -2 $fastq_2 -S mapping.sam
-    samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam
-    samtools index sorted.bam
-    parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
-    # Insert 0 coverage count in empty files. See Issue #2
-    find . -size 0 -print0 | xargs -0 -I{} sh -c 'echo -e 0"\t"0"\t"0 > "{}"'
-    parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
-    rm *.tab
-    if [ -f "coverages.tsv" ]
-    then
-        echo pass > assembly_mapping_status
-    else
-        echo fail > assembly_mapping_status
-    fi
+    {
+        bowtie2-build --threads ${task.cpus} $assembly genome_index
+        bowtie2 -q --very-sensitive-local --threads ${task.cpus} -x genome_index -1 $fastq_1 -2 $fastq_2 -S mapping.sam
+        samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam
+        samtools index sorted.bam
+        parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
+        # Insert 0 coverage count in empty files. See Issue #2
+        find . -size 0 -print0 | xargs -0 -I{} sh -c 'echo -e 0"\t"0"\t"0 > "{}"'
+        parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
+        rm *.tab
+        if [ -f "coverages.tsv" ]
+        then
+            echo pass > .status
+        else
+            echo fail > .status
+        fi
+    } || {
+        echo fail > .status
+    }
     """
 }
 
@@ -582,6 +647,12 @@ Processes the results from the assembly_mapping process and filters the
 assembly contigs based on coverage and length thresholds.
 */
 process process_assembly_mapping {
+
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 11"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 11"
+    }
 
     tag { fastq_id }
     // This process can only use a single CPU
@@ -594,6 +665,7 @@ process process_assembly_mapping {
 
     output:
     set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' into MAIN_pilon_in
+    set fastq_id, val("process_am"), file(".status") into STATUS_process_am
 
     script:
     template "process_assembly_mapping.py"
@@ -607,6 +679,12 @@ resulting from the mapping of the raw reads into the assembly.
 */
 process pilon {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 12"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 12"
+    }
+
     tag { fastq_id }
     echo false
     publishDir 'results/assembly/pilon/', mode: 'copy'
@@ -616,12 +694,17 @@ process pilon {
 
     output:
     set fastq_id, '*_polished.assembly.fasta' into MAIN_pilon_out, MAIN_pilon
-
+    set fastq_id, val("pilon"), file(".status") into STATUS_pilon
 
     script:
     """
-    pilon_mem=${String.valueOf(task.memory).substring(0, String.valueOf(task.memory).length() - 1).replaceAll("\\s", "")}
-    java -jar -Xms256m -Xmx\${pilon_mem} /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf --threads $task.cpus
+    {
+        pilon_mem=${String.valueOf(task.memory).substring(0, String.valueOf(task.memory).length() - 1).replaceAll("\\s", "")}
+        java -jar -Xms256m -Xmx\${pilon_mem} /NGStools/pilon-1.22.jar --genome $assembly --frags $bam_file --output ${fastq_id}_polished.assembly --changes --vcf --threads $task.cpus
+        echo pass > .status
+    } || {
+        echo fail > .status
+    }
     """
 
 }
@@ -674,6 +757,12 @@ Executs MLST on a given assembly
 */
 process mlst {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 13"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 13"
+    }
+
     tag { fastq_id }
     // This process can only use a single CPU
     cpus 1
@@ -683,13 +772,19 @@ process mlst {
 
     output:
     file '*.mlst.txt' into MAIN_mlst_out
+    set fastq_id, val("mlst"), file(".status") into STATUS_mlst
 
     when:
     params.mlstRun  == true && params.annotationRun
 
     script:
     """
-    mlst $assembly >> ${fastq_id}.mlst.txt
+    {
+        mlst $assembly >> ${fastq_id}.mlst.txt
+        echo pass > .status
+    } || {
+        echo fail > .status
+    }
     """
 }
 
@@ -716,6 +811,12 @@ process compile_mlst {
 
 process abricate {
 
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 14"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 14"
+    }
+
     tag { "${fastq_id} ${db}" }
     publishDir "results/annotation/abricate/${fastq_id}"
 
@@ -725,19 +826,31 @@ process abricate {
 
     output:
     file '*.tsv'
+    set fastq_id, val("abricate_${db}"), file(".status") into STATUS_abricate
 
     when:
     params.abricateRun == true && params.annotationRun
 
     script:
     """
-    abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
+    {
+        abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
+        echo pass > .status
+    } || {
+        echo fail > .status
+    }
     """
 
 }
 
 
 process prokka {
+
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 15"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 15"
+    }
 
     tag { fastq_id }
     publishDir "results/annotation/prokka/${fastq_id}"
@@ -747,20 +860,32 @@ process prokka {
 
     output:
     file "${fastq_id}/*"
+    set fastq_id, val("prokka"), file(".status") into STATUS_prokka
 
     when:
     params.prokkaRun == true && params.annotationRun
 
     script:
     """
-    prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
-           --increment 10 $assembly
+    {
+        prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
+               --increment 10 $assembly
+        echo pass > .status
+    } || {
+        echo fail > .status
+    }
     """
 
 }
 
 
 process chewbbaca {
+
+    // Send POST request to platform
+    if ( params.platformHTTP != null ) {
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 16"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId 16"
+    }
 
     maxForks 1
     tag { fastq_id }
@@ -774,14 +899,20 @@ process chewbbaca {
 
     output:
     file 'chew_results'
+    set fastq_id, val("chewbbaca"), file(".status") into STATUS_chewbbaca
 
     when:
     params.chewbbacaRun == true
 
     script:
     """
-    echo $assembly >> input_file.txt
-    chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
+    {
+        echo $assembly >> input_file.txt
+        chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
+        echo pass > .status
+    } || {
+        echo fail > .status
+    }
     """
 
 }
@@ -805,7 +936,14 @@ process status {
     set fastq_id, task_name, status from STATUS_fastqc.mix(STATUS_trimmomatic,
                                                            STATUS_fastqc2,
                                                            STATUS_spades,
-                                                           STATUS_am)
+                                                           STATUS_process_spades,
+                                                           STATUS_am,
+                                                           STATUS_process_am,
+                                                           STATUS_pilon,
+                                                           STATUS_mlst,
+                                                           STATUS_abricate,
+                                                           STATUS_prokka,
+                                                           STATUS_chewbbaca)
 
     output:
     file 'status_*' into master_status

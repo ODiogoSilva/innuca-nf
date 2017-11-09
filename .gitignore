@@ -16,5 +16,6 @@ templates/__pycache__/
 templates/tests/__pycache__/
 doc/.ropeproject
 doc/build
-tests/test_data/*.zip
-tests/test_data/*.html
+tests/*
+issues/*
+*.pdf
