@@ -27,6 +27,7 @@ class Process:
             self.main_in_str = self.main_out_str = "MAIN_assembly"
 
         self.link_start = [self.main_out_str]
+        self.link_end = []
 
         self._input_channel = None
         self._output_channel = None
@@ -188,7 +189,7 @@ class Trimmomatic(Process):
         self.input_type = "fastq"
         self.output_type = "fastq"
 
-        self.link_end = "SIDE_phred"
+        self.link_end.append({"link": "SIDE_phred", "alias": "SIDE_phred"})
 
 
 class Spades(Process):
@@ -201,7 +202,7 @@ class Spades(Process):
         self.input_type = "fastq"
         self.output_type = "assembly"
 
-        self.link_end = "SIDE_max_len"
+        self.link_end.append({"link": "SIDE_max_len", "alias": "SIDE_max_len"})
 
 
 class ProcessSpades(Process):
@@ -225,7 +226,7 @@ class AssemblyMapping(Process):
         self.input_type = "assembly"
         self.output_type = "assembly"
 
-        self.link_end = "MAIN"
+        self.link_end.append({"link": "MAIN_fq", "alias": "MAIN_assembly"})
 
 
 class Pilon(Process):
@@ -250,7 +251,8 @@ class Mlst(Process):
         self.output_type = None
 
         self.link_start = None
-        self.link_end = "MAIN_assembly"
+        self.link_end.append({"link": "MAIN_assembly",
+                              "alias": "MAIN_assembly"})
 
 
 class Abricate(Process):
@@ -264,7 +266,8 @@ class Abricate(Process):
         self.output_type = None
 
         self.link_start = None
-        self.link_end = "MAIN_assembly"
+        self.link_end.append({"link": "MAIN_assembly",
+                              "alias": "MAIN_assembly"})
 
 
 class Prokka(Process):
@@ -278,5 +281,6 @@ class Prokka(Process):
         self.output_type = None
 
         self.link_start = None
-        self.link_end = "MAIN_assembly"
+        self.link_end.append({"link": "MAIN_assembly",
+                              "alias": "MAIN_assembly"})
 

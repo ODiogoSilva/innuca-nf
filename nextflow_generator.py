@@ -131,12 +131,15 @@ class NextflowGenerator:
 
             # check if the current process receives a secondary side channel.
             # If so, add to the links list of that side channel
-            if hasattr(p, "link_end"):
-                if p.link_end in self.secondary_channels:
-                    self.secondary_channels[p.link_end]["end"].append(
-                        "{}_{}".format(p.link_end, pidx))
+            if p.link_end:
+                for l in p.link_end:
+                    if l["link"] in self.secondary_channels:
+                        self.secondary_channels[l["link"]]["end"].append(
+                            "{}_{}".format(l["alias"], pidx))
 
             p.set_channels(**{"pid": pidx})
+
+        print(self.secondary_channels)
 
     def _set_secondary_channels(self):
 
@@ -181,8 +184,8 @@ def main():
         # "fastqc",
         "spades",
         # "process_spades",
-        # "assembly_mapping",
-        # "pilon",
+        "assembly_mapping",
+        "pilon",
         "mlst",
         "abricate",
         "prokka"
