@@ -61,7 +61,7 @@ def test_fastqc_run_no_adapters(temp_env):
 
     fq.main(*args)
 
-    with open("fastq_status") as fh:
+    with open(".status") as fh:
         res = fh.read()
 
     assert 1
@@ -78,7 +78,7 @@ def test_fastqc_run_adapters(temp_env):
 
     fq.main(*args)
 
-    with open("fastq_status") as fh:
+    with open(".status") as fh:
         res = fh.read()
 
     assert 1
