@@ -8,8 +8,8 @@ process integrity_coverage {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -111,8 +111,8 @@ process integrity_coverage_2 {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -177,8 +177,8 @@ process fastqc {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -295,8 +295,8 @@ process trimmomatic {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -341,8 +341,8 @@ process fastqc2 {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -422,8 +422,8 @@ process spades {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -453,8 +453,8 @@ process process_spades {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -487,8 +487,8 @@ process assembly_mapping {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -562,10 +562,10 @@ process pilon {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
-
+    
     tag {{ fastq_id }}
     echo false
     publishDir 'results/assembly/pilon/', mode: 'copy'
@@ -629,8 +629,8 @@ process mlst {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -684,8 +684,8 @@ process abricate {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ "${{fastq_id}} ${{db}}" }}
@@ -721,8 +721,8 @@ process prokka {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -758,8 +758,8 @@ process chewbbaca {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     maxForks 1
