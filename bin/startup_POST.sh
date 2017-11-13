@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-#curl -H  "Content-Type: application/json" \
-#     -X POST -d $1 \
-#     https://
+json="{'project_id': '$1', 'pipeline_id': '$2', 'process_id': '$3', 'run_property': 'log_file', 'run_property_value': '$(pwd)/.command.log', 'type': 'output'}"
 
-echo "{'project_id': '$1', 'pipeline_id': '$2', 'process_id': '1', " \
-     "'status': 'None', 'log': '$(pwd)/.command.log', 'report': 'None', " \
-     "'info': 'None', 'stats': 'None'}"
+curl -H  "Content-Type: application/json" \
+     -X PUT -d $json \
+     $4
