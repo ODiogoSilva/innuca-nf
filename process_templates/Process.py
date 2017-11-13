@@ -36,9 +36,6 @@ class Process:
         self.kwargs = None
         self.forks = []
 
-        print(self.template)
-        print(self.pid)
-
     @property
     def template_str(self):
 

@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
+import os
+import shutil
+from distutils.dir_util import copy_tree
 import argparse
+
+from os.path import join, dirname
 
 
 from process_templates import HeaderSkeleton as hs
@@ -192,6 +197,11 @@ def get_args():
                         help="Space separated tasks of the pipeline")
     parser.add_argument("-o", dest="output_nf",
                         help="Name of the pipeline file")
+    parser.add_argument("--include-templates", dest="include_templates",
+                        action="store_const", const=True,
+                        help="This will copy the necessary templates and lib"
+                             " files to the directory where the nextflow"
+                             " pipeline will be generated")
 
     args = parser.parse_args()
 
@@ -209,6 +219,35 @@ def get_tuples(task):
 
     # print(tasks_ids)
     return task_id
+
+
+def copy_project(path):
+    """
+
+    Parameters
+    ----------
+    path
+
+    Returns
+    -------
+
+    """
+
+    # Get nextflow repo directory
+    repo_dir = dirname(os.path.abspath(__file__))
+
+    # Get target directory
+    target_dir = dirname(path)
+
+    # Copy templates
+    copy_tree(join(repo_dir, "templates"), join(target_dir, "templates"))
+
+    # Copy Helper scripts
+    copy_tree(join(repo_dir, "lib"), join(target_dir, "lib"))
+
+    # Copy default config file
+    shutil.copy(join(repo_dir, "nextflow.config"),
+                join(target_dir, "nextflow.config"))
 
 
 def main(args):
@@ -246,6 +285,9 @@ def main(args):
                             nextflow_file=args.output_nf)
 
     nfg.build()
+
+    if args.include_templates:
+        copy_project(args.output_nf)
 
 
 if __name__ == '__main__':
