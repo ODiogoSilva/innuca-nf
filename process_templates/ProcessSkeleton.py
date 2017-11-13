@@ -203,8 +203,8 @@ process fastqc_report {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -249,8 +249,8 @@ process trimmomatic {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId 4"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId 4"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -367,8 +367,8 @@ process fastqc2_report {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
@@ -532,8 +532,8 @@ process process_assembly_mapping {{
 
     // Send POST request to platform
     if ( params.platformHTTP != null ) {{
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid}"
-        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid}"
+        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
+        afterScript "final_POST.sh $params.projectId $params.pipelineId {pid} $params.platformHTTP"
     }}
 
     tag {{ fastq_id }}
