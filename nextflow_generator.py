@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import argparse
+
+
 from process_templates import HeaderSkeleton as hs
 from process_templates.Process import IntegrityCoverage, FastQC, Trimmomatic, \
     Spades, ProcessSpades, AssemblyMapping, Pilon, CheckCoverage, Mlst, \
@@ -139,8 +142,6 @@ class NextflowGenerator:
 
             p.set_channels(**{"pid": pidx})
 
-        print(self.secondary_channels)
-
     def _set_secondary_channels(self):
 
         for source, vals in self.secondary_channels.items():
@@ -168,33 +169,51 @@ class NextflowGenerator:
             fh.write(self.template)
 
 
-def main():
+def get_args():
 
-    pipeline = [
-        "integrity_coverage",
-        # "check_coverage",
-        # "fastqc_trimmomatic",
-        "fastqc",
-        "trimmomatic",
-        # "trimmomatic",
-        # "fastqc",
-        # "check_coverage",
-        # "trimmomatic",
-        # "fastqc_trimmomatic",
-        # "fastqc",
-        "spades",
-        # "process_spades",
-        "assembly_mapping",
-        "pilon",
-        "mlst",
-        "abricate",
-        "prokka"
-    ]
+    parser = argparse.ArgumentParser(
+        description="Nextflow pipeline generator")
 
-    nfg = NextflowGenerator(pipeline, "custom_pipe.nf")
+    parser.add_argument("-t", "--tasks", nargs="+", dest="tasks",
+                        help="Space separated tasks of the pipeline")
+    parser.add_argument("-o", dest="output_nf",
+                        help="Name of the pipeline file")
+
+    args = parser.parse_args()
+
+    return args
+
+
+def main(args):
+
+    # pipeline = [
+    #     "integrity_coverage",
+    #     # "check_coverage",
+    #     # "fastqc_trimmomatic",
+    #     "fastqc",
+    #     "trimmomatic",
+    #     # "trimmomatic",
+    #     # "fastqc",
+    #     # "check_coverage",
+    #     # "trimmomatic",
+    #     # "fastqc_trimmomatic",
+    #     # "fastqc",
+    #     "spades",
+    #     # "process_spades",
+    #     "assembly_mapping",
+    #     "pilon",
+    #     "mlst",
+    #     "abricate",
+    #     "prokka"
+    # ]
+
+    nfg = NextflowGenerator(args.tasks, args.output_nf)
 
     nfg.build()
 
 
 if __name__ == '__main__':
-    main()
+
+    args = get_args()
+
+    main(args)
