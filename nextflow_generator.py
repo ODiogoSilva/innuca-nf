@@ -245,6 +245,9 @@ def copy_project(path):
     # Copy Helper scripts
     copy_tree(join(repo_dir, "lib"), join(target_dir, "lib"))
 
+    # Copy bin scripts
+    copy_tree(join(repo_dir, "bin"), join(target_dir, "bin"))
+
     # Copy default config file
     shutil.copy(join(repo_dir, "nextflow.config"),
                 join(target_dir, "nextflow.config"))
