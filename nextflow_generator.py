@@ -45,7 +45,7 @@ class NextflowGenerator:
     dict: Maps the process ids to the corresponding template interface class
     """
 
-    def __init__(self, process_list, nextflow_file):
+    def __init__(self, process_list, nextflow_file, process_ids=None):
 
         # Check if all specified processes are available
         for p in process_list:
@@ -53,7 +53,20 @@ class NextflowGenerator:
                 raise ValueError(
                     "The process '{}' is not available".format(p))
 
-        self.processes = [self.process_map[p](p) for p in process_list]
+        if process_ids:
+            if len(process_ids) != len(process_list):
+                raise ProcessError(
+                    "The provided list of process ids must match the length"
+                    " of the process list."
+                )
+
+        else:
+            process_ids = [None] * len(process_list)
+
+        self.processes = [
+            self.process_map[p](template=p, pid=pid) for p, pid in
+            zip(process_list, process_ids)
+        ]
         """
         list: Stores the process interfaces in the specified order
         """
@@ -175,6 +188,7 @@ def get_args():
         description="Nextflow pipeline generator")
 
     parser.add_argument("-t", "--tasks", nargs="+", dest="tasks",
+                        type=get_tuples,
                         help="Space separated tasks of the pipeline")
     parser.add_argument("-o", dest="output_nf",
                         help="Name of the pipeline file")
@@ -182,6 +196,19 @@ def get_args():
     args = parser.parse_args()
 
     return args
+
+
+def get_tuples(task):
+
+    task_id = task.split(":")
+
+    if len(task_id) != 2:
+        raise argparse.ArgumentTypeError(
+            "Tasks arguments must be in a format of <task>:<task id> "
+            "(e.g.: 'spades:5')")
+
+    # print(tasks_ids)
+    return task_id
 
 
 def main(args):
@@ -207,7 +234,16 @@ def main(args):
     #     "prokka"
     # ]
 
-    nfg = NextflowGenerator(args.tasks, args.output_nf)
+    # Get process names
+    process_names = [x[0] for x in args.tasks]
+
+    # Get process ids
+    process_ids = [x[1] for x in args.tasks]
+
+    # nfg = NextflowGenerator(args.tasks, args.output_nf)
+    nfg = NextflowGenerator(process_list=process_names,
+                            process_ids=process_ids,
+                            nextflow_file=args.output_nf)
 
     nfg.build()
 
@@ -215,5 +251,7 @@ def main(args):
 if __name__ == '__main__':
 
     args = get_args()
+
+    # print(args)
 
     main(args)

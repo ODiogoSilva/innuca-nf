@@ -3,7 +3,7 @@ from process_templates.ProcessSkeleton import Skeletons
 
 class Process:
 
-    def __init__(self, ptype, template):
+    def __init__(self, ptype=None, template=None, pid=None):
 
         accepted_types = [
             "pre_assembly", "assembly", "post_assembly", "annotation"]
@@ -14,7 +14,7 @@ class Process:
 
         self.skels = Skeletons()
 
-        self.pid = None
+        self.pid = pid
         self.ptype = ptype
         self.template = template
 
@@ -35,6 +35,9 @@ class Process:
 
         self.kwargs = None
         self.forks = []
+
+        print(self.template)
+        print(self.pid)
 
     @property
     def template_str(self):
@@ -126,10 +129,10 @@ class IntegrityCoverage(Process):
 
     """
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="pre_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "fastq"
         self.output_type = "fastq"
@@ -150,10 +153,10 @@ class CheckCoverage(Process):
 
     """
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="pre_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "fastq"
         self.output_type = "fastq"
@@ -170,10 +173,10 @@ class FastQC(Process):
 
     """
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="pre_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "fastq"
         self.output_type = "fastq"
@@ -181,10 +184,10 @@ class FastQC(Process):
 
 class Trimmomatic(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="pre_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "fastq"
         self.output_type = "fastq"
@@ -194,10 +197,10 @@ class Trimmomatic(Process):
 
 class Spades(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "fastq"
         self.output_type = "assembly"
@@ -207,10 +210,10 @@ class Spades(Process):
 
 class ProcessSpades(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="post_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "assembly"
         self.output_type = "assembly"
@@ -218,10 +221,10 @@ class ProcessSpades(Process):
 
 class AssemblyMapping(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="post_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "assembly"
         self.output_type = "assembly"
@@ -231,10 +234,10 @@ class AssemblyMapping(Process):
 
 class Pilon(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="post_assembly",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "assembly"
         self.output_type = "assembly"
@@ -242,10 +245,10 @@ class Pilon(Process):
 
 class Mlst(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="annotation",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "assembly"
         self.output_type = None
@@ -257,10 +260,10 @@ class Mlst(Process):
 
 class Abricate(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="annotation",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "assembly"
         self.output_type = None
@@ -272,10 +275,10 @@ class Abricate(Process):
 
 class Prokka(Process):
 
-    def __init__(self, template):
+    def __init__(self, **kwargs):
 
         super().__init__(ptype="annotation",
-                         template=template)
+                         **kwargs)
 
         self.input_type = "assembly"
         self.output_type = None
