@@ -28,8 +28,9 @@ Requirements
    :maxdepth: 4
    :caption: Contents:
 
+   generator
+   nextflow_generator
    templates
-
 
 Indices and tables
 ==================
