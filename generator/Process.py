@@ -235,23 +235,23 @@ class Process:
         logger.debug("Setting secondary channel for source '{}': {}".format(
             source, channel_list))
 
-        if source == "MAIN_assembly":
-            self._context["output_channel"] = ",".join(channel_list)
-            return
-
-        # Handle the special case where the main channel is forked
-        elif source == "MAIN_fq":
-            # Update previous output_channel
-            self._context["output_channel"] = "_{}".format(self._output_channel)
+        # Handle the case where the main channel is forked
+        if source.startswith("MAIN"):
+            # Update previous output_channel to prevent overlap with
+            # subsequent main channels. This is done by adding a "_" at the
+            # beginning of the channel name
+            self._context["output_channel"] = "_{}".format(
+                self._output_channel)
             # Set source to modified output channel
             source = self._context["output_channel"]
-            # Modify original channel_list for non duplicate main channels
-            channel_list = ["_{}".format(x) for x in channel_list]
-            # Add original output channel to channel_list
+            # Add the next first main channel to the channel_list
             channel_list.append(self._output_channel)
+        # Handle forks from non main channels
         else:
             source = "{}_{}".format(source, self.pid)
 
+        # When there is only one channel to fork into, use the 'set' operator
+        # instead of 'into'
         if len(channel_list) == 1:
             self.forks.append("\n{}.set{{ {} }}\n".format(source,
                                                            channel_list[0]))
@@ -416,7 +416,7 @@ class AssemblyMapping(Process):
 
         self.status_channels = ["STATUS_am", "STATUS_amp"]
 
-        self.link_end.append({"link": "MAIN_fq", "alias": "MAIN_assembly"})
+        self.link_end.append({"link": "MAIN_fq", "alias": "_MAIN_assembly"})
 
 
 class Pilon(Process):
