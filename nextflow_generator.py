@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 
 import os
-import sys
 import shutil
 import logging
 import argparse
 import logging.config
 
 from distutils.dir_util import copy_tree
-from os.path import join, dirname, basename
+from os.path import join, dirname
 
 from generator import HeaderSkeleton as hs
 from generator.Process import IntegrityCoverage, FastQC, Trimmomatic, \
@@ -362,27 +361,27 @@ def main(args):
     #     "abricate",
     #     "prokka"
     # ]
-    pipeline = [
-        "integrity_coverage",
-        "check_coverage",
-        # "fastqc_trimmomatic",
-        # "fastqc",
-        # "trimmomatic",
-        # "trimmomatic",
-        # "fastqc",
-        # "check_coverage",
-        # "trimmomatic",
-        # "fastqc_trimmomatic",
-        # "fastqc",
-        # "spades",
-        # "process_spades",
-        # "assembly_mapping",
-        # "pilon",
-        # "mlst",
-        # "abricate",
-        # "prokka"
-        "status_compiler"
-    ]
+    # pipeline = [
+    #     "integrity_coverage",
+    #     "check_coverage",
+    #     # "fastqc_trimmomatic",
+    #     # "fastqc",
+    #     # "trimmomatic",
+    #     # "trimmomatic",
+    #     # "fastqc",
+    #     # "check_coverage",
+    #     # "trimmomatic",
+    #     # "fastqc_trimmomatic",
+    #     # "fastqc",
+    #     # "spades",
+    #     # "process_spades",
+    #     # "assembly_mapping",
+    #     # "pilon",
+    #     # "mlst",
+    #     # "abricate",
+    #     # "prokka"
+    #     "status_compiler"
+    # ]
 
     # Get process names
     process_names = [x[0] for x in args.tasks]

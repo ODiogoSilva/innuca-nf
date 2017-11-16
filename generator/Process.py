@@ -63,12 +63,12 @@ class Process:
 
         self._main_in_str = None
         """
-        str: String used to specify the prefix of main input channel. 
+        str: String used to specify the prefix of main input channel.
         """
 
         self._main_out_str = None
         """
-        str: String used to specify the prefix of main output channel. 
+        str: String used to specify the prefix of main output channel.
         """
 
         self._input_channel = None
@@ -91,7 +91,7 @@ class Process:
         """
         list: List of strings with the starting points for secondary channels.
         When building the pipeline, these strings will be matched with equal
-        strings in the :py:attr:`link_end` attribute of other Processes. 
+        strings in the :py:attr:`link_end` attribute of other Processes.
         """
 
         self.link_end = []
@@ -273,7 +273,7 @@ class Status(Process):
     def set_status_channels(self, channel_list):
 
         if len(channel_list) == 1:
-            logger.debug("Setting only one status channel: ".format(
+            logger.debug("Setting only one status channel: {}".format(
                 channel_list[0]))
             self._context = {"status_channels": channel_list[0]}
 
