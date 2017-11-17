@@ -5,7 +5,6 @@ process assembly_mapping {
     {% include "post.txt" ignore missing %}
 
     tag { fastq_id }
-    echo false
 
     input:
     set fastq_id, file(assembly), file(fastq) from {{ input_channel }}.join(_{{ input_channel }})
@@ -20,13 +19,20 @@ process assembly_mapping {
     script:
     """
     {
-        bowtie2-build --threads ${task.cpus} $assembly genome_index
-        bowtie2 -q --very-sensitive-local --threads ${task.cpus} -x genome_index -1 ${fastq[0]} -2 ${fastq[1]} -S mapping.sam
-        samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam
-        samtools index sorted.bam
+        echo [DEBUG] BUILDING BOWTIE INDEX FOR ASSEMBLY: $assembly >> .command.log 2>&1
+        bowtie2-build --threads ${task.cpus} $assembly genome_index >> .command.log 2>&1
+        echo [DEBUG] MAPPING READS FROM $fastq >> .command.log 2>&1
+        bowtie2 -q --very-sensitive-local --threads ${task.cpus} -x genome_index -1 ${fastq[0]} -2 ${fastq[1]} -S mapping.sam >> .command.log 2>&1
+        echo [DEBUG] CONVERTING AND SORTING SAM TO BAM >> .command.log 2>&1
+        samtools sort -o sorted.bam -O bam -@ ${task.cpus} mapping.sam && rm *.sam  >> .command.log 2>&1
+        echo [DEBUG] CREATING BAM INDEX >> .command.log 2>&1
+        samtools index sorted.bam >> .command.log 2>&1
+        echo [DEBUG] ESTIMATING READ DEPTH >> .command.log 2>&1
         parallel -j ${task.cpus} samtools depth -ar {} sorted.bam \\> {}.tab  ::: \$(grep ">" $assembly | cut -c 2-)
         # Insert 0 coverage count in empty files. See Issue #2
+        echo [DEBUG] REMOVING EMPTY FILES  >> .command.log 2>&1
         find . -size 0 -print0 | xargs -0 -I{} sh -c 'echo -e 0"\t"0"\t"0 > "{}"'
+        echo [DEBUG] COMPILING COVERAGE REPORT  >> .command.log 2>&1
         parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
         rm *.tab
         if [ -f "coverages.tsv" ]
