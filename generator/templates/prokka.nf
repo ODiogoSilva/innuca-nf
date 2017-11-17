@@ -21,7 +21,7 @@ process prokka {
     """
     {
         prokka --outdir $fastq_id --cpus $task.cpus --centre UMMI --compliant \
-               --increment 10 $assembly
+               --increment 10 $assembly >> .command.log 2>&1
         echo pass > .status
     } || {
         echo fail > .status
