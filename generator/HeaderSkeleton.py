@@ -52,7 +52,8 @@ IN_spades_kmers = Channel
 
 IN_process_spades_opts = Channel
                 .value([params.spadesMinContigLen,
-                        params.spadesMinKmerCoverage])
+                        params.spadesMinKmerCoverage,
+                        params.spadesMaxContigs])
 
 // ASSEMBLY MAPPING CHANNELS //
 IN_assembly_mapping_opts = Channel
