@@ -40,7 +40,7 @@ process fastqc_report {
     val opts from Channel.value("--ignore-tests")
 
     output:
-    set fastq_id, file(fastq_pair), 'optimal_trim' into MAIN_fastqc_trim
+    set fastq_id, file(fastq_pair), 'optimal_trim', ".status" into MAIN_fastqc_trim
     file '*_trim_report' into LOG_trim_{{ pid }}
     file "*_status_report" into LOG_fastqc_report_{{ pid }}
     file "${fastq_id}_*_summary.txt" optional true
@@ -52,6 +52,7 @@ process fastqc_report {
 
 MAIN_fastqc_trim_{{ pid }} = Channel.create()
 MAIN_fastqc_trim
+        .filter{ it[3].text == "pass" }
         .map{ [it[0], it[1], file(it[2]).text] }
         .into(MAIN_fastqc_trim_{{ pid }})
 
