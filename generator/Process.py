@@ -379,7 +379,8 @@ class FastqcTrimmomatic(Process):
 
         self.link_end.append({"link": "SIDE_phred", "alias": "SIDE_phred"})
 
-        self.status_channels = ["STATUS_fastqc", "STATUS_report" "STATUS_trim"]
+        self.status_channels = ["STATUS_fastqc", "STATUS_report",
+                                "STATUS_trim"]
 
 
 class Spades(Process):
