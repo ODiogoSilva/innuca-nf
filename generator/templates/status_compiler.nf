@@ -16,8 +16,8 @@ process status {
 
     """
     echo $fastq_id, $task_name, \$(cat $status) > status_${fastq_id}_${task_name}
-    echo $fastq_id, $task_name, \$(cat warning) > warning_${fastq_id}_${task_name}
-    echo $fastq_id, $task_name, \$(cat fail) > fail_${fastq_id}_${task_name}
+    echo $fastq_id, $task_name, \$(cat $warning) > warning_${fastq_id}_${task_name}
+    echo $fastq_id, $task_name, \$(cat $fail) > fail_${fastq_id}_${task_name}
     """
 }
 
