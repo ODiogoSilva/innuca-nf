@@ -137,7 +137,7 @@ def test_full_run_files(temp_env):
     ic.MAGIC_DICT = MAGIC_DICT
     ic.main(*opts)
 
-    assert sorted(os.listdir(".")) == ['.status', 'sample_coverage',
+    assert sorted(os.listdir(".")) == ['.fail', '.status', 'sample_coverage',
                                        'sample_encoding', 'sample_max_len',
                                        'sample_phred', 'sample_report']
 
