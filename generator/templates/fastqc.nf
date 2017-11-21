@@ -12,7 +12,7 @@ process fastqc2 {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out_{{ pid }}
-    set fastq_id, val("fastqc2_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
+    set fastq_id, val("fastqc2_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_fastqc_{{ pid }}
 
     when:
     params.stopAt != "fastqc2"
@@ -39,6 +39,7 @@ process fastqc2_report {
     output:
     set fastq_id, file(fastq_pair), '.status' into MAIN_fastqc_report_{{ pid }}
     file "*_status_report" into LOG_fastqc_report_{{ pid }}
+    set fastq_id, val("fastqc2_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_report_{{ pid }}
     file "${fastq_id}_*_summary.txt" optional true
 
     script:
