@@ -42,7 +42,7 @@ process fastqc_report {
     output:
     set fastq_id, file(fastq_pair), 'optimal_trim', ".status" into MAIN_fastqc_trim
     file '*_trim_report' into LOG_trim_{{ pid }}
-    set fastq_id, val("fastqc_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_report_{{ pid }}
+    set fastq_id, val("fastqc_report_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_report_{{ pid }}
     file "*_status_report" into LOG_fastqc_report_{{ pid }}
     file "${fastq_id}_*_summary.txt" optional true
 

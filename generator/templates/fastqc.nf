@@ -39,7 +39,7 @@ process fastqc2_report {
     output:
     set fastq_id, file(fastq_pair), '.status' into MAIN_fastqc_report_{{ pid }}
     file "*_status_report" into LOG_fastqc_report_{{ pid }}
-    set fastq_id, val("fastqc2_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_report_{{ pid }}
+    set fastq_id, val("fastqc2_report_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_report_{{ pid }}
     file "${fastq_id}_*_summary.txt" optional true
 
     script:
