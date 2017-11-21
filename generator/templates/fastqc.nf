@@ -12,7 +12,7 @@ process fastqc2 {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out_{{ pid }}
-    set fastq_id, val("fastqc2_{{ pid }}"), file(".status") into STATUS_{{ pid }}
+    set fastq_id, val("fastqc2_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
 
     when:
     params.stopAt != "fastqc2"

@@ -18,9 +18,9 @@ process integrity_coverage_2 {
 	set fastq_id,
 	    file(fastq_pair),
 	    file('*_coverage'),
-	    file('*_max_len') into MAIN_integrity_{{ pid }}
+	    file('*_max_len') optional true into MAIN_integrity_{{ pid }}
 	file('*_report') into LOG_report_coverage_{{ pid }}
-	set fastq_id, val("integrity_coverage2_{{ pid }}"), file(".status") into STATUS_{{ pid }}
+	set fastq_id, val("integrity_coverage2_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
 
 	script:
 	template "integrity_coverage.py"

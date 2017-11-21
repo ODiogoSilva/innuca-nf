@@ -13,7 +13,7 @@ process abricate {
 
     output:
     file '*.tsv'
-    set fastq_id, val("abricate_${db}"), file(".status") into STATUS_{{ pid }}
+    set fastq_id, val("abricate_${db}"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
 
     when:
     params.abricateRun == true && params.annotationRun

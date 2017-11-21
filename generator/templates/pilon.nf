@@ -13,7 +13,7 @@ process pilon {
 
     output:
     set fastq_id, '*_polished.assembly.fasta' into {{ output_channel }}, pilon_report_{{ pid }}
-    set fastq_id, val("pilon"), file(".status") into STATUS_{{ pid }}
+    set fastq_id, val("pilon"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
 
     script:
     """

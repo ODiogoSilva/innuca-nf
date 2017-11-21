@@ -12,7 +12,7 @@ process fastqc {
 
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out_{{ pid }}
-    set fastq_id, val("fastqc_{{ pid }}"), file(".status") into STATUS_fastqc_{{ pid }}
+    set fastq_id, val("fastqc_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_fastqc_{{ pid }}
 
     when:
     params.stopAt != "fastqc"
@@ -113,7 +113,7 @@ process trimmomatic {
 
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into {{ output_channel }}
-    set fastq_id, val("trimmomatic_{{ pid }}"), file(".status") into STATUS_trim_{{ pid }}
+    set fastq_id, val("trimmomatic_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_trim_{{ pid }}
     file '*_trimlog.txt' optional true into LOG_trimmomatic_{{ pid }}
 
     when:

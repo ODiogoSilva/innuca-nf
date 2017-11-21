@@ -14,7 +14,7 @@ process spades {
 
     output:
     set fastq_id, file('*_spades.assembly.fasta') optional true into {{ output_channel }}
-    set fastq_id, val("spades"), file(".status") into STATUS_{{ pid }}
+    set fastq_id, val("spades"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
 
     when:
     params.stopAt != "spades"
