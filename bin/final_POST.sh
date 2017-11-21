@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
 st=$(cat $(pwd)/.status)
-warn=$(cat $(pwd)/.warnings)
+warn=$(cat $(pwd)/.warning)
 
 json="{'project_id':'$1','pipeline_id':'$2','process_id':'$3','run_info':'None','run_output':'None','warnings':'$warn','log_file':'$(pwd)/.command.log','status':'$st','type':'output'}"
 
