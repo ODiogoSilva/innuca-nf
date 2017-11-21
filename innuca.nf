@@ -66,7 +66,8 @@ IN_process_spades_opts = Channel
 
 // ASSEMBLY MAPPING CHANNELS //
 IN_assembly_mapping_opts = Channel
-                .value(params.minAssemblyCoverage)
+                .value(params.minAssemblyCoverage,
+                       params.AMaxContigs)
 
 /** INTEGRITY_COVERAGE - MAIN
 This process will check the integrity, encoding and get the estimated
@@ -661,11 +662,11 @@ process process_assembly_mapping {
 
     input:
     set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from MAIN_am_out
-    val min_assembly_coverage from IN_assembly_mapping_opts
+    val opts from IN_assembly_mapping_opts
     val gsize from IN_genome_size
 
     output:
-    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' into MAIN_pilon_in
+    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' optional true into MAIN_pilon_in
     set fastq_id, val("process_am"), file(".status") into STATUS_process_am
 
     script:

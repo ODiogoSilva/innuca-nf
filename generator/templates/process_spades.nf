@@ -15,9 +15,9 @@ process process_spades {
     val gsize from IN_genome_size
 
     output:
-    set fastq_id, file('*.assembly.fasta') into {{ output_channel }}
+    set fastq_id, file('*.assembly.fasta') optional true into {{ output_channel }}
     set fastq_id, val("process_spades"), file(".status") into STATUS_{{ pid }}
-    file '*.report.csv'
+    file '*.report.csv' optional true
 
     when:
     params.stopAt != "process_spades"

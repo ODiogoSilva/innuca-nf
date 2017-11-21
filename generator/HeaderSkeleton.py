@@ -57,5 +57,6 @@ IN_process_spades_opts = Channel
 
 // ASSEMBLY MAPPING CHANNELS //
 IN_assembly_mapping_opts = Channel
-                .value(params.minAssemblyCoverage)
+                .value([params.minAssemblyCoverage,
+                        params.AMaxContigs])
     """

@@ -63,11 +63,11 @@ process process_assembly_mapping {
 
     input:
     set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from MAIN_am_out_{{ pid }}
-    val min_assembly_coverage from IN_assembly_mapping_opts
+    val opts from IN_assembly_mapping_opts
     val gsize from IN_genome_size
 
     output:
-    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' into {{ output_channel }}
+    set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' optional true into {{ output_channel }}
     set fastq_id, val("process_am"), file(".status") into STATUS_amp_{{ pid }}
 
     script:
