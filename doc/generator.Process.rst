@@ -5,3 +5,4 @@ generator\.Process module
     :members:
     :undoc-members:
     :show-inheritance:
+    :show-private:
