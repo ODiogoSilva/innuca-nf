@@ -8,6 +8,33 @@ logger = logging.getLogger("main.{}".format(__name__))
 
 
 class Process:
+    """Main interface for basic process functionality
+
+    The ``Process`` class is intended to be inherited by specific process
+    classes (e.g., :py:class:`IntegrityCoverage`) and provides the basic
+    functionality to build the channels and links between processes.
+
+    Child classes are expected to inherit the ``__init__`` execution, which
+    basically means that at least, the child must be defined as::
+
+        class ChildProcess(Process):
+            def__init__(self, **kwargs):
+                super().__init__(**kwargs)
+
+    This ensures that when the ``ChildProcess`` class is instantiated, it
+    automatically sets the attributes of the parent class.
+
+    This also means that child processes must be instantiated providing
+    information on the process type and jinja2 template with the nextflow code.
+
+    Parameters
+    ----------
+    ptype : str
+        Process type. See :py:attr:`Process.accepted_types`.
+    template : str
+        Name of the jinja2 template with the nextflow code for that process.
+        Templates are stored in ``generator/templates``.
+    """
 
     def __init__(self, ptype, template, process_id=None):
 
