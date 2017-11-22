@@ -193,11 +193,12 @@ class Process:
         self._template_path = join(tpl_dir, template + ".nf")
 
     def _set_main_channel_name(self, ptype):
-        """
+        """Sets the prefix for the main channel depending on the process type
 
-        Returns
-        -------
-
+        ``Pre-assembly`` types are set to ``MAIN_fq``, while ``post-assembly``
+        are set to ``MAIN_assembly``. This distinction is important to allow
+        the forking of the last main channel with FastQ files or with
+        assembly files.
         """
 
         if ptype == "pre_assembly":
@@ -254,15 +255,26 @@ class Process:
         return x
 
     def set_channels(self, **kwargs):
-        """ General purpose method that sets the template placeholders
+        """ General purpose method that sets the main channels
 
-        In most cases, the kwargs dict will contain at least the ``pid``
-        (process_id) key.
+        This method will take a variable number of keyword arguments to
+        set the :py:attr:`Process._context` attribute with the information
+        on the main channels for the process. This is done by appending
+        the process ID (:py:attr:`Process.pid`) attribute to the input,
+        output and status channel prefix strings. In the output channel,
+        the process ID is incremented by 1 to allow the connection with the
+        channel in the next process.
+
+        The ``**kwargs`` system for setting the :py:attr:`Process._context`
+        attribute also provides additional flexibility. In this way,
+        individual processes can provide additional information not covered
+        in this method, without changing it.
 
         Parameters
         ----------
         kwargs : dict
-            Dictionary with the placeholders for the template string.
+            Dictionary with the keyword arguments for setting up the template
+            context
         """
 
         self.pid = kwargs.get("pid")
@@ -277,13 +289,32 @@ class Process:
                                                   self.pid + 1)
 
         self._context = {**kwargs, **{"input_channel": self._input_channel,
-                                     "output_channel": self._output_channel}}
+                                      "output_channel": self._output_channel}}
 
     def set_secondary_channels(self, source, channel_list):
-        """ Forks the start of a secondary channel to multiple channels
+        """ General purpose method for setting a secondary channel
 
-        The fork will be based on the pid_list, which should be a list of
-        numbers.
+        This method allows a given source channel to be forked into one or
+        more channels and sets those forks in the :py:attr:`Process.forks`
+        attribute. Both the source and the channels in the ``channel_list``
+        argument must be the final channel strings,  which means that this
+        method should be called only after setting the main channels.
+
+        If the source is not a main channel, this will simply create a fork
+        or set for every channel in the ``channel_list`` argument list::
+
+            SOURCE_CHANNEL_1.into{SINK_1;SINK_2}
+
+        If the source is a main channel, this will apply some changes to
+        the output channel of the process, to avoid overlapping main output
+        channels.  For instance, forking the main output channel for process
+        2 would create a ``MAIN_2.into{...}``. The issue here is that the
+        ``MAIN_2`` channel is expected as the input of the next process, but
+        now is being used to create the fork. To solve this issue, the output
+        channel is modified into ``_MAIN_2``, and the fork is set to
+        the channels provided channels plus the ``MAIN_2`` channel::
+
+            _MAIN_2.into{MAIN_2;MAIN_5;...}
 
         Parameters
         ----------
@@ -322,7 +353,6 @@ class Process:
                 source, ";".join(channel_list)))
 
         logger.debug("Setting forks attribute to: {}".format(self.forks))
-
         self._context = {**self._context, **{"forks": "\n".join(self.forks)}}
 
 
