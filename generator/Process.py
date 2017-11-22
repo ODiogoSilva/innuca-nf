@@ -402,12 +402,15 @@ class Status(Process):
 class IntegrityCoverage(Process):
     """Process template interface for first integrity_coverage process
 
-    This process is mandatory as the first step in a pipeline
+    This process is set with::
 
-    The required template fields are:
+        - ``input_type``: fastq
+        - ``output_type``: fastq
 
-        - `pid`
+    It contains two secondary channel link starts::
 
+        - ``SIDE_phred``: Phred score of the FastQ files
+        - ``SIDE_max_len``: Maximum read length
     """
 
     def __init__(self, **kwargs):
