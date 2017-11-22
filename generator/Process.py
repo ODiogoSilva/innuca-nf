@@ -406,6 +406,7 @@ class IntegrityCoverage(Process):
 
         - ``input_type``: fastq
         - ``output_type``: fastq
+        - ``ptype``: pre_assembly
 
     It contains two **secondary channel link starts**:
 
@@ -431,6 +432,7 @@ class CheckCoverage(Process):
 
         - ``input_type``: fastq
         - ``output_type``: fastq
+        - ``ptype``: pre_assembly
 
     It contains one **secondary channel link start**:
 
@@ -456,6 +458,7 @@ class FastQC(Process):
 
         - ``input_type``: fastq
         - ``output_type``: fastq
+        - ``ptype``: pre_assembly
 
     It contains two **status channels**:
 
@@ -485,6 +488,7 @@ class Trimmomatic(Process):
 
         - ``input_type``: fastq
         - ``output_type``: fastq
+        - ``ptype``: pre_assembly
 
     It contains one **secondary channel link end**:
 
@@ -512,6 +516,7 @@ class FastqcTrimmomatic(Process):
 
         - ``input_type``: fastq
         - ``output_type``: fastq
+        - ``ptype``: pre_assembly
 
     It contains one **secondary channel link end**:
 
@@ -545,6 +550,7 @@ class Spades(Process):
 
         - ``input_type``: fastq
         - ``output_type``: assembly
+        - ``ptype``: assembly
 
     It contains one **secondary channel link end**:
 
@@ -569,6 +575,7 @@ class ProcessSpades(Process):
 
         - ``input_type``: assembly
         - ``output_type``: assembly
+        - ``ptype``: post_assembly
 
     """
 
@@ -588,6 +595,7 @@ class AssemblyMapping(Process):
 
         - ``input_type``: assembly
         - ``output_type``: assembly
+        - ``ptype``: post_assembly
 
     It contains one **secondary channel link end**:
 
@@ -620,6 +628,7 @@ class Pilon(Process):
 
         - ``input_type``: assembly
         - ``output_type``: assembly
+        - ``ptype``: post_assembly
 
     It contains one **dependency process**:
 
@@ -645,6 +654,7 @@ class Mlst(Process):
 
         - ``input_type``: assembly
         - ``output_type``: None
+        - ``ptype``: post_assembly
 
     It contains one **secondary channel link end**:
 
@@ -672,6 +682,7 @@ class Abricate(Process):
 
         - ``input_type``: assembly
         - ``output_type``: None
+        - ``ptype``: post_assembly
 
     It contains one **secondary channel link end**:
 
@@ -699,6 +710,7 @@ class Prokka(Process):
 
         - ``input_type``: assembly
         - ``output_type``: None
+        - ``ptype``: post_assembly
 
     It contains one **secondary channel link end**:
 
