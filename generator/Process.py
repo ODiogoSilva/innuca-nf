@@ -357,12 +357,31 @@ class Process:
 
 
 class Status(Process):
+    """Extends the Process methods to status-type processes
+    """
 
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)
 
     def set_status_channels(self, channel_list):
+        """General method for setting the input channels for the status process
+
+        Given a list of status channels that are gathered during the pipeline
+        construction, this method will automatically set the input channel
+        for the status process. This makes use of the ``mix`` channel operator
+        of nextflow for multiple channels::
+
+            STATUS_1.mix(STATUS_2,STATUS_3,...)
+
+        This will set the ``status_channels`` key for the ``_context``
+        attribute of the process.
+
+        Parameters
+        ----------
+        channel_list : list
+            List of strings with the final name of the status channels
+        """
 
         if len(channel_list) == 1:
             logger.debug("Setting only one status channel: {}".format(
