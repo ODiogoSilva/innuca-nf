@@ -1,5 +1,5 @@
     if ( params.platformHTTP != null ) {
-        beforeScript "startup_POST.sh $params.projectId $params.pipelineId {{ process_id }} $params.platformHTTP"
+        beforeScript "set_dotfiles.sh; startup_POST.sh $params.projectId $params.pipelineId {{ process_id }} $params.platformHTTP"
         afterScript "final_POST.sh $params.projectId $params.pipelineId {{ process_id }} $params.platformHTTP"
     }
     beforeScript "set_dotfiles.sh"
