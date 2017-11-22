@@ -228,6 +228,17 @@ class Process:
 
     @property
     def template_str(self):
+        """Class property that returns a populated template string
+
+        This property allows the template of a particular process to be
+        dynamically generated and returned when doing ``Process.template_str``.
+
+        Returns
+        -------
+        x : str
+            String with the complete and populated process template
+
+        """
 
         if not self._context:
             raise Exception("Channels must be setup first using the "
@@ -238,6 +249,7 @@ class Process:
         ))
 
         x = self.render(self._template_path, self._context)
+        print(type(x))
 
         return x
 
