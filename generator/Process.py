@@ -503,6 +503,26 @@ class Trimmomatic(Process):
 
 
 class FastqcTrimmomatic(Process):
+    """Fastqc + Trimmomatic process template interface
+
+    This process executes FastQC only to inform the trim range for trimmomatic,
+    not for QC checks.
+
+    This process is set with:
+
+        - ``input_type``: fastq
+        - ``output_type``: fastq
+
+    It contains one **secondary channel link end**:
+
+        - ``SIDE_phred`` (alias: ``SIDE_phred``): Receives FastQ phred score
+
+    It contains three **status channels**:
+
+        - ``STATUS_fastqc``: Status for the fastqc process
+        - ``STATUS_report``: Status for the fastqc_report process
+        - ``STATUS_trim``: Status for the trimmomatic process
+    """
 
     def __init__(self, **kwargs):
 
