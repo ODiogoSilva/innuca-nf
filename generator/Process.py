@@ -45,6 +45,9 @@ class Process:
             "annotation",
             "status"
         ]
+        """
+        list: Accepted process types
+        """
 
         if ptype not in accepted_types:
             raise ValueError(
@@ -52,10 +55,17 @@ class Process:
 
         self.pid = None
         """
-        int: Process ID
+        int: Process ID number that represents the order and position in the
+        generated pipeline
         """
 
         self.process_id = process_id
+        """
+        int or str: optional Process ID that has no effect on the setup of 
+        the pipeline channels. It's used for the POST requests of each main
+        process and is mapped to the process IDs of the innuendo/oneida 
+        platform
+        """
 
         self.ptype = ptype
         """
@@ -65,9 +75,15 @@ class Process:
         self.template = template
         """
         str: Template name for the current process. This string will be used
-        to fetch the correct template in :py:attr:`_skels`.
+        to fetch the file containing the corresponding jinja2 template
+        in the :py:func:`_set_template` method
         """
+
         self._template_path = None
+        """
+        str: Path to the file containing the jinja2 template file. It's 
+        set in :py:func:`_set_template`.
+        """
         self._set_template(template)
 
         self.input_type = None
@@ -85,7 +101,7 @@ class Process:
         self.dependencies = []
         """
         list: Contains the dependencies of the current process in the form
-        of the :py:attr:`Process.template` attribute.
+        of the :py:attr:`Process.template` attribute (e.g., [``fastqc``])
         """
 
         self._main_in_str = None
@@ -125,10 +141,17 @@ class Process:
         """
         list: List of dictionaries containing the a string of the ending point
         for a secondary channel. Each dictionary should contain at least
-        two key/vals: {"link": <link string>, "alias":<string for template>}
+        two key/vals: 
+        ``{"link": <link string>, "alias":<string for template>}``
         """
 
         self.status_channels = ["STATUS"]
+        """
+        list: Name of the status channels produced by the process. By default,
+        it sets a single status channel. If more than one status channels 
+        are required for the process, list each one in this attribute
+        (e.g., :py:attr:`FastQC.status_channels`)
+        """
         self.status_strs = []
         """
         str: Name of the status channel for the current process. These strings
@@ -379,6 +402,9 @@ class FastQC(Process):
         self.output_type = "fastq"
 
         self.status_channels = ["STATUS_fastqc", "STATUS_report"]
+        """
+        list: Setting status channels for FastQC execution and FastQC report
+        """
 
 
 class Trimmomatic(Process):
