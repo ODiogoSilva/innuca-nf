@@ -479,6 +479,17 @@ class FastQC(Process):
 
 
 class Trimmomatic(Process):
+    """Trimmomatic process template interface
+
+    This process is set with:
+
+        - ``input_type``: fastq
+        - ``output_type``: fastq
+
+    It contains one **secondary channel link end**:
+
+        - ``SIDE_phred`` (alias: ``SIDE_phred``): Receives FastQ phred score
+    """
 
     def __init__(self, **kwargs):
 
