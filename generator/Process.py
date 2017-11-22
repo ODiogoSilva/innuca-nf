@@ -402,12 +402,12 @@ class Status(Process):
 class IntegrityCoverage(Process):
     """Process template interface for first integrity_coverage process
 
-    This process is set with::
+    This process is set with:
 
         - ``input_type``: fastq
         - ``output_type``: fastq
 
-    It contains two secondary channel link starts::
+    It contains two secondary channel link starts:
 
         - ``SIDE_phred``: Phred score of the FastQ files
         - ``SIDE_max_len``: Maximum read length
