@@ -452,9 +452,15 @@ class CheckCoverage(Process):
 class FastQC(Process):
     """FastQC process template interface
 
-    The required template fields are:
+    This process is set with:
 
-        -
+        - ``input_type``: fastq
+        - ``output_type``: fastq
+
+    It contains two **status channels**:
+
+        - ``STATUS_fastqc``: Status for the fastqc process
+        - ``STATUS_report``: Status for the fastqc_report process
 
     """
 
