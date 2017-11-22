@@ -67,6 +67,8 @@ class NextflowGenerator:
                 raise ValueError(
                     "The process '{}' is not available".format(p))
 
+        # Check for consistency between the provided process ids and the
+        # number of processes
         if process_ids:
             if len(process_ids) != len(process_list):
                 raise ProcessError(
@@ -108,6 +110,15 @@ class NextflowGenerator:
         self._check_pipeline_requirements()
 
     def _check_pipeline_requirements(self):
+        """ Checks for some pipeline requirements before building
+
+        Currently, the only hard requirement is that the pipeline must start
+        with the integrity_coverage process, in order to evaluate if the
+        input FastQ are corrupt or not.
+
+        Besides this requirements, it checks for the existence the dependencies
+        for all processes.
+        """
 
         pipeline_names = [x.template for x in self.processes]
 
@@ -130,11 +141,41 @@ class NextflowGenerator:
                         p.template, p.dependencies))
 
     def _build_header(self):
+        """Adds the header template to the master template string
+        """
 
         logger.debug("Building header")
         self.template += hs.header + hs.start_channel
 
     def _set_channels(self):
+        """Sets the main channels for the pipeline
+
+        The setup of the main channels follows four main steps for each
+        process specified in the :py:attr:`NextflowGenerator.processes`
+        attribute:
+
+            - (If not the first process) Checks if the input of the current
+            process is compatible with the output of the previous process.
+            - Checks if the current process has starts any secondary channels.
+            If so, populate the :py:attr:`NextflowGenerator.secondary_channels`
+            with the name of the link start, the process class and a list
+            to harbour potential receiving ends.
+            - Checks if the current process receives from any secondary
+            channels. If a corresponding secondary link has been previously
+            set, it will populate the
+            :py:attr:`NextflowGenerator.secondary_channels` attribute with
+            the receiving channels.
+            - Sets the main channels by providing the process ID.
+
+        Notes
+        -----
+        **On the secondary channel setup**: With this approach, there can only
+        be one secondary link start for each type of secondary link. For
+        instance, If there are two processes that start a secondary channel
+        for the ``SIDE_max_len`` channel, only the last one will be recorded,
+        and all receiving processes will get the channel from the latest
+        process.
+        """
 
         logger.debug("Setting main channels")
         previous_channel = None
@@ -199,6 +240,13 @@ class NextflowGenerator:
             p.set_channels(**{"pid": pidx, "process_id": p.process_id})
 
     def _set_secondary_channels(self):
+        """Sets the secondary channels for the pipeline
+
+        This will iterate over the
+        :py:attr:`NextflowGenerator.secondary_channels` dictionary that is
+        populated when executing :py:func:`NextflowGenerator._set_channels`
+        method.
+        """
 
         logger.debug("Setting secondary channels: {}".format(
             self.secondary_channels))
@@ -225,6 +273,8 @@ class NextflowGenerator:
             vals["p"].set_secondary_channel(source, vals["end"])
 
     def _set_status_channels(self):
+        """Compiles all status channels for the status compiler process
+        """
 
         # Compile status channels from pipeline process
         status_channels = []
@@ -238,6 +288,16 @@ class NextflowGenerator:
                 p.set_status_channels(status_channels)
 
     def build(self):
+        """Main pipeline builder
+
+        This method is responsible for building the
+        :py:attr:`NextflowGenerator.template` attribute that will contain
+        the nextflow code of the pipeline.
+
+        First it builds the header, then sets the main channels, the
+        secondary channels and finally the status channels. When the pipeline
+        is built, is writes the code to a nextflow file.
+        """
 
         # Generate regular nextflow header that sets up the shebang, imports
         # and all possible initial channels
