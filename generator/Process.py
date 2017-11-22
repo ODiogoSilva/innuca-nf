@@ -407,7 +407,7 @@ class IntegrityCoverage(Process):
         - ``input_type``: fastq
         - ``output_type``: fastq
 
-    It contains two secondary channel link starts:
+    It contains two **secondary channel link starts**:
 
         - ``SIDE_phred``: Phred score of the FastQ files
         - ``SIDE_max_len``: Maximum read length
@@ -427,13 +427,14 @@ class IntegrityCoverage(Process):
 class CheckCoverage(Process):
     """Process template interface for additional integrity_coverage process
 
-    This process can be added before the assembly process multiple times
+    This process is set with:
 
-    The required template fields are:
+        - ``input_type``: fastq
+        - ``output_type``: fastq
 
-        - `pid`
-        - `input_channel`
-        - `output_channel`
+    It contains one **secondary channel link start**:
+
+        - ``SIDE_max_len``: Maximum read length
 
     """
 
