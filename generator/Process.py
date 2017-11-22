@@ -291,7 +291,7 @@ class Process:
         self._context = {**kwargs, **{"input_channel": self._input_channel,
                                       "output_channel": self._output_channel}}
 
-    def set_secondary_channels(self, source, channel_list):
+    def set_secondary_channel(self, source, channel_list):
         """ General purpose method for setting a secondary channel
 
         This method allows a given source channel to be forked into one or

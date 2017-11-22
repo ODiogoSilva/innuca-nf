@@ -222,7 +222,7 @@ class NextflowGenerator:
                                                 source,
                                                 vals["end"]))
 
-            vals["p"].set_secondary_channels(source, vals["end"])
+            vals["p"].set_secondary_channel(source, vals["end"])
 
     def _set_status_channels(self):
 
