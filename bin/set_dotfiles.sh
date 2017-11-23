@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-touch .status .warning .fail
+touch .status .warning .fail .report.json
