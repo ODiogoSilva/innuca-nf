@@ -27,6 +27,8 @@ process trimmomatic {
 
 process trimmomatic_report {
 
+    {% include "report_post.txt" ignore missing %}
+
     publishDir 'reports/trimmomatic/'
 
     input:
