@@ -250,8 +250,6 @@ class Process:
         ))
 
         x = self.render(self._template_path, self._context)
-        print(type(x))
-
         return x
 
     def set_channels(self, **kwargs):
