@@ -30,6 +30,8 @@ process pilon {
 
 process pilon_report {
 
+    {% include "report_post.txt" ignore missing %}
+
     tag { fastq_id }
 
     input:
