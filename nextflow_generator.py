@@ -10,9 +10,7 @@ from distutils.dir_util import copy_tree
 from os.path import join, dirname
 
 from generator import HeaderSkeleton as hs
-from generator.Process import IntegrityCoverage, FastQC, Trimmomatic, \
-    Spades, ProcessSpades, AssemblyMapping, Pilon, CheckCoverage, Mlst, \
-    Abricate, Prokka, StatusCompiler, FastqcTrimmomatic
+import generator.Process as pc
 
 logger = logging.getLogger("main")
 
@@ -41,19 +39,20 @@ class ChannelError(Exception):
 class NextflowGenerator:
 
     process_map = {
-        "integrity_coverage": IntegrityCoverage,
-        "check_coverage": CheckCoverage,
-        "fastqc": FastQC,
-        "trimmomatic": Trimmomatic,
-        "fastqc_trimmomatic": FastqcTrimmomatic,
-        "spades": Spades,
-        "process_spades": ProcessSpades,
-        "assembly_mapping": AssemblyMapping,
-        "pilon": Pilon,
-        "mlst": Mlst,
-        "abricate": Abricate,
-        "prokka": Prokka,
-        "status_compiler": StatusCompiler
+        "integrity_coverage": pc.IntegrityCoverage,
+        "check_coverage": pc.CheckCoverage,
+        "fastqc": pc.FastQC,
+        "trimmomatic": pc.Trimmomatic,
+        "fastqc_trimmomatic": pc.FastqcTrimmomatic,
+        "spades": pc.Spades,
+        "process_spades": pc.ProcessSpades,
+        "assembly_mapping": pc.AssemblyMapping,
+        "pilon": pc.Pilon,
+        "mlst": pc.Mlst,
+        "abricate": pc.Abricate,
+        "prokka": pc.Prokka,
+        "chewbbaca": pc.Chewbbaca,
+        "status_compiler": pc.StatusCompiler
     }
     """
     dict: Maps the process ids to the corresponding template interface class
