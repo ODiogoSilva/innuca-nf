@@ -17,7 +17,8 @@ process chewbbaca {
 
     output:
     file 'chew_results'
-    set fastq_id, val("chewbbaca"), file(".status") into STATUS_{{ pid }}
+    set fastq_id, val("chewbbaca"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
+    file '.report.json'
 
     when:
     params.chewbbacaRun == true
