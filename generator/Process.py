@@ -729,6 +729,34 @@ class Prokka(Process):
                               "alias": "MAIN_assembly"})
 
 
+class Chewbbaca(Process):
+    """Prokka mapping process template interface
+
+    This process is set with:
+
+        - ``input_type``: assembly
+        - ``output_type``: None
+        - ``ptype``: post_assembly
+
+    It contains one **secondary channel link end**:
+
+        - ``MAIN_assembly`` (alias: ``MAIN_assembly``): Receives the last
+        assembly.
+    """
+
+    def __init__(self, **kwargs):
+
+        super().__init__(ptype="annotation",
+                         **kwargs)
+
+        self.input_type = "assembly"
+        self.output_type = None
+
+        self.link_start = None
+        self.link_end.append({"link": "MAIN_assembly",
+                              "alias": "MAIN_assembly"})
+
+
 class StatusCompiler(Status):
     """Status compiler process template interface
 
