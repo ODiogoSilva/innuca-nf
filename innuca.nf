@@ -911,6 +911,7 @@ process chewbbaca {
     {
         echo $assembly >> input_file.txt
         chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
+
         echo pass > .status
     } || {
         echo fail > .status

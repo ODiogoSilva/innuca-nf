@@ -287,7 +287,8 @@ class Process:
                                                   self.pid + 1)
 
         self._context = {**kwargs, **{"input_channel": self._input_channel,
-                                      "output_channel": self._output_channel}}
+                                      "output_channel": self._output_channel,
+                                      "template": self.template}}
 
     def set_secondary_channel(self, source, channel_list):
         """ General purpose method for setting a secondary channel

@@ -8,7 +8,7 @@ process chewbbaca {
     scratch true
     publishDir "results/chewbbaca/${fastq_id}"
     if (params.chewbbacaQueue != null) {
-        queue '${params.schema_path}'
+        queue '${params.schemaPath}'
     }
 
     input:
