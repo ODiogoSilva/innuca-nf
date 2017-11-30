@@ -28,7 +28,7 @@ process chewbbaca {
     {
         echo $assembly >> input_file.txt
         chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
-        jq -cs '.[0] * .[1]' chew_results/*/results* >> .report.json
+        merge_json.py chew_results/*/results*
         echo pass > .status
     } || {
         echo fail > .status
