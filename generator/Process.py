@@ -342,6 +342,9 @@ class Process:
         else:
             source = "{}_{}".format(source, self.pid)
 
+        # Removes possible duplicate channels, when the fork is terminal
+        channel_list = list(set(channel_list))
+
         # When there is only one channel to fork into, use the 'set' operator
         # instead of 'into'
         if len(channel_list) == 1:
