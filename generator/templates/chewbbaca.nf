@@ -13,7 +13,7 @@ process chewbbaca {
 
     input:
     set fastq_id, file(assembly) from {{ input_channel }}
-    each file(schema) from Channel.fromPath(params.schema_path)
+    each file(schema) from Channel.fromPath(params.schemaPath)
 
     output:
     file 'chew_results'
