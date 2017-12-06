@@ -34,7 +34,7 @@ process assembly_mapping {
         find . -size 0 -print0 | xargs -0 -I{} sh -c 'echo -e 0"\t"0"\t"0 > "{}"'
         echo [DEBUG] COMPILING COVERAGE REPORT  >> .command.log 2>&1
         parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
-        rm *.tab
+//        rm *.tab
         if [ -f "coverages.tsv" ]
         then
             echo pass > .status
