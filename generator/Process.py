@@ -620,6 +620,7 @@ class AssemblyMapping(Process):
 
         self.status_channels = ["STATUS_am", "STATUS_amp"]
 
+        self.link_start.append("SIDE_BpCoverage")
         self.link_end.append({"link": "MAIN_fq", "alias": "_MAIN_assembly"})
 
 
@@ -647,6 +648,9 @@ class Pilon(Process):
         self.output_type = "assembly"
 
         self.dependencies = ["assembly_mapping"]
+
+        self.link_end.append({"link": "SIDE_BpCoverage",
+                              "alias": "SIDE_BpCoverage"})
 
 
 class Mlst(Process):

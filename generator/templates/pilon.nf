@@ -35,7 +35,7 @@ process pilon_report {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(assembly) from pilon_report_{{ pid }}
+    set fastq_id, file(assembly), file(coverage_bp) from pilon_report_{{ pid }}.join(SIDE_BpCoverage_{{ pid }})
 
     output:
     file "*_assembly_report.csv" into pilon_report_out_{{ pid }}
