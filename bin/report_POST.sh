@@ -14,8 +14,7 @@ if [ -s .report.json ];
 then
     json_str=$(cat $(pwd)/.report.json | sed 's/ /_/g' | sed s/\"/\'/g)
     workdir=$(pwd)
-    echo ${json_str}
     json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task'}"
-    echo ${json}
-    curl -H  "Content-Type: application/json" -k -L -X POST -d \"$json\" $url > /dev/null
+    echo \"${json}\" > .final.json
+    cat .final.json | curl -H  "Content-Type: application/json" -k -L -X POST -d @- $url > /dev/null
 fi
