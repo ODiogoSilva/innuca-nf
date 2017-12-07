@@ -10,7 +10,7 @@ process assembly_mapping {
     set fastq_id, file(assembly), file(fastq) from {{ input_channel }}.join(_{{ input_channel }})
 
     output:
-    set fastq_id, file(assembly), 'coverages.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into MAIN_am_out_{{ pid }}
+    set fastq_id, file(assembly), 'coverages.tsv', 'coverage_per_bp.tsv', 'sorted.bam', 'sorted.bam.bai' optional true into MAIN_am_out_{{ pid }}
     set fastq_id, file("coverage_per_bp.tsv") optional true into SIDE_BpCoverage_{{ pid }}
     set fastq_id, val("assembly_mapping"), file(".status"), file(".warning"), file(".fail") into STATUS_am_{{ pid }}
 
@@ -64,7 +64,7 @@ process process_assembly_mapping {
     cpus 1
 
     input:
-    set fastq_id, file(assembly), file(coverage), file(bam_file), file(bam_index) from MAIN_am_out_{{ pid }}
+    set fastq_id, file(assembly), file(coverage), file(coverage_bp), file(bam_file), file(bam_index) from MAIN_am_out_{{ pid }}
     val opts from IN_assembly_mapping_opts
     val gsize from IN_genome_size
 
