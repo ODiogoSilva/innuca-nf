@@ -12,7 +12,14 @@ task=$8
 
 if [ -s .report.json ];
 then
-    json_str=$(cat $(pwd)/.report.json | sed 's/ /_/g' | sed s/\"/\'/g)
+
+    if [ $task = "chewbbaca" ];
+    then
+        json_str=$(cat $(pwd)/.report.json | sed 's/ //g' | sed s/\"/\'/g)
+    else
+        json_str=$(cat $(pwd)/.report.json | sed 's/ /_/g' | sed s/\"/\'/g)
+    fi
+
     workdir=$(pwd)
     json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task'}"
     echo \"${json}\" > .final.json
