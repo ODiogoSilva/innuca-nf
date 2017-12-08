@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -ex
+
 projectid=$1
 pipelineid=$2
 processid=$3
