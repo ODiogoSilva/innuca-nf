@@ -8,7 +8,7 @@ process chewbbaca {
     scratch true
     publishDir "results/chewbbaca/${fastq_id}"
     if (params.chewbbacaQueue != null) {
-        queue '${params.schemaPath}'
+        queue '${params.chewbbacaQueue}'
     }
 
     input:
@@ -27,7 +27,7 @@ process chewbbaca {
     """
     {
         echo $assembly >> input_file.txt
-        chewBBACA.py AlleleCall -i input_file.txt -g $schema -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
+        chewBBACA.py AlleleCall -i input_file.txt -g params.schemaSelectedLoci -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
         merge_json.py chew_results/*/results*
         echo pass > .status
     } || {
