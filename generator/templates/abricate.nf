@@ -39,7 +39,7 @@ process process_abricate {
     tag { "${fastq_id} ${db}" }
 
     input:
-    set fastq_id, db, abricate_tsv from abricate_out_{{ pid }}
+    set fastq_id, database, abricate_tsv from abricate_out_{{ pid }}
 
     script:
     template "process_abricate.py"
