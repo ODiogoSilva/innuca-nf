@@ -12,7 +12,7 @@ process abricate {
     each db from params.abricateDatabases
 
     output:
-    file '*.tsv'
+    set fastq_id, db, '*.tsv' into abricate_out_{{ pid }}
     set fastq_id, val("abricate_${db}"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
 
     when:
@@ -27,5 +27,22 @@ process abricate {
         echo fail > .status
     }
     """
+
+}
+
+
+process process_abricate {
+
+    // Send POST request to platform
+    {% include "report_post.txt" ignore missing %}
+
+    tag { "${fastq_id} ${db}" }
+
+    input:
+    set fastq_id, db, abricate_tsv from abricate_out_{{ pid }}
+
+    script:
+    template "process_abricate.py"
+
 
 }
