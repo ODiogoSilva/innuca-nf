@@ -146,6 +146,7 @@ class NextflowGenerator:
         logger.debug("Building header")
         self.template += hs.header + hs.start_channel
 
+
     def _set_channels(self):
         """Sets the main channels for the pipeline
 
@@ -198,7 +199,7 @@ class NextflowGenerator:
                         p.template, previous_channel.output_type))
                 # Check if the connecting processes can be linked by their
                 # input/output types
-                if p.ptype in ["annotation", "status"]:
+                if p.ignore_type:
                     pass
                 elif previous_channel.output_type != p.input_type:
                     raise ChannelError(previous_channel.template,

@@ -98,6 +98,13 @@ class Process:
         two processes is viable.
         """
 
+        self.ignore_type = False
+        """
+        boolean: If True, this process will ignore the input/output type
+        requirements. This attribute is set to True for terminal singleton 
+        forks in the pipeline. 
+        """
+
         self.dependencies = []
         """
         list: Contains the dependencies of the current process in the form
@@ -427,6 +434,19 @@ class IntegrityCoverage(Process):
         self.link_start.extend(["SIDE_phred", "SIDE_max_len"])
 
 
+class SeqTyping(Process):
+    """
+
+    """
+
+    def __int__(self, **kwargs):
+
+        self.input_type = "fastq"
+        self.output_type = None
+
+        self.ignore_type = True
+
+
 class CheckCoverage(Process):
     """Process template interface for additional integrity_coverage process
 
@@ -676,6 +696,8 @@ class Mlst(Process):
         self.input_type = "assembly"
         self.output_type = None
 
+        self.ignore_type = True
+
         self.link_start = None
         self.link_end.append({"link": "MAIN_assembly",
                               "alias": "MAIN_assembly"})
@@ -703,6 +725,8 @@ class Abricate(Process):
 
         self.input_type = "assembly"
         self.output_type = None
+
+        self.ignore_type = True
 
         self.link_start = None
         self.link_end.append({"link": "MAIN_assembly",
@@ -732,6 +756,8 @@ class Prokka(Process):
         self.input_type = "assembly"
         self.output_type = None
 
+        self.ignore_type = True
+
         self.link_start = None
         self.link_end.append({"link": "MAIN_assembly",
                               "alias": "MAIN_assembly"})
@@ -760,6 +786,8 @@ class Chewbbaca(Process):
         self.input_type = "assembly"
         self.output_type = None
 
+        self.ignore_type = True
+
         self.link_start = None
         self.link_end.append({"link": "MAIN_assembly",
                               "alias": "MAIN_assembly"})
@@ -777,6 +805,8 @@ class StatusCompiler(Status):
 
         super().__init__(ptype="status",
                          **kwargs)
+
+        self.ignore_type = True
 
         self.link_start = None
 
