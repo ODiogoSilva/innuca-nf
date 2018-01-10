@@ -60,3 +60,9 @@ IN_assembly_mapping_opts = Channel
                 .value([params.minAssemblyCoverage,
                         params.AMaxContigs])
     """
+
+raw_for = """
+
+{}
+
+"""

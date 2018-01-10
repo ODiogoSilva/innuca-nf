@@ -9,7 +9,7 @@ process integrity_coverage {
     cpus 1
 
 	input:
-	set fastq_id, file(fastq_pair) from IN_fastq_raw
+	set fastq_id, file(fastq_pair) from {{ input_channel }}
 	val gsize from IN_genome_size
 	val cov from IN_min_coverage
 	// This channel is for the custom options of the integrity_coverage.py

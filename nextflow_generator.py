@@ -40,6 +40,7 @@ class NextflowGenerator:
 
     process_map = {
         "integrity_coverage": pc.IntegrityCoverage,
+        "seq_typing": pc.SeqTyping,
         "check_coverage": pc.CheckCoverage,
         "fastqc": pc.FastQC,
         "trimmomatic": pc.Trimmomatic,
@@ -78,13 +79,18 @@ class NextflowGenerator:
         else:
             process_ids = [None] * len(process_list)
 
-        self.processes = [
+        init_process = [pc.Init(template="init")]
+
+        processes = [
             self.process_map[p](template=p, process_id=pid) for p, pid in
             zip(process_list, process_ids)
         ]
+        self.processes = init_process + processes
         """
         list: Stores the process interfaces in the specified order
         """
+
+        print(self.processes)
 
         self.nf_file = nextflow_file
         """
@@ -126,10 +132,10 @@ class NextflowGenerator:
 
         # Check if the pipeline contains at least one integrity_coverage
         # process
-        if pipeline_names.index("integrity_coverage") != 0:
-            raise ProcessError("The pipeline must contain at least one"
-                               "integrity coverage at the start of the"
-                               "pipeline")
+        # if pipeline_names.index("integrity_coverage") != 0:
+        #     raise ProcessError("The pipeline must contain at least one"
+        #                        "integrity coverage at the start of the"
+        #                        "pipeline")
 
         logger.debug("Checking for dependencies of templates")
 
@@ -179,14 +185,20 @@ class NextflowGenerator:
 
         logger.debug("Setting main channels")
         previous_channel = None
+        pidx = 0
 
         for idx, p in enumerate(self.processes):
 
             # Make sure that the process id starts at 1
-            pidx = idx + 1
+            if not p.ignore_pid:
+                pidx += 1
+            else:
+                logger.debug("[{}] Ignoring process id increment".format(
+                    p.template
+                ))
 
             logger.debug("[{}] Setting main channels for idx '{}'".format(
-                p.template, idx))
+                p.template, pidx))
             logger.debug("[{}] Expected input type: {}".format(
                 p.template, p.input_type))
 
@@ -206,8 +218,8 @@ class NextflowGenerator:
                                        previous_channel.output_type,
                                        p.template,
                                        p.input_type)
-
-                previous_channel = p
+                else:
+                    previous_channel = p
 
             logger.debug("[{}] Checking secondary links".format(p.template))
 
@@ -229,9 +241,10 @@ class NextflowGenerator:
                         self.secondary_channels[l["link"]]["end"].append(
                             "{}_{}".format(l["alias"], pidx))
 
-            logger.debug("[{}] Added status channel(s): {}".format(
-                p.template, p.status_channels))
-            self.status_channels.append(p.status_strs)
+            if p.status_channels:
+                logger.debug("[{}] Added status channel(s): {}".format(
+                    p.template, p.status_channels))
+                self.status_channels.append(p.status_strs)
 
             logger.debug("[{}] Setting main channels with pid '{}' and "
                          "process_id '{}'".format(
@@ -282,6 +295,15 @@ class NextflowGenerator:
             status_channels.extend(p.status_strs)
 
         logger.debug("Setting status channels: {}".format(status_channels))
+
+        # Check for duplicate channels. Raise exception if found.
+        if len(status_channels) != len(set(status_channels)):
+            raise ProcessError(
+                "Duplicate status channels detected. Please ensure that "
+                "the 'status_channels' attributes of each process are "
+                "unique. Here are the status channels:\n\n{}".format(
+                    ", ".join(status_channels)
+                ))
 
         for p in self.processes:
             if p.ptype == "status":

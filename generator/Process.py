@@ -39,6 +39,7 @@ class Process:
     def __init__(self, ptype, template, process_id=None):
 
         accepted_types = [
+            "init",
             "pre_assembly",
             "assembly",
             "post_assembly",
@@ -103,6 +104,12 @@ class Process:
         boolean: If True, this process will ignore the input/output type
         requirements. This attribute is set to True for terminal singleton 
         forks in the pipeline. 
+        """
+
+        self.ignore_pid = False
+        """
+        boolean: If True, this process will not make the pid advance. This
+        is used for terminal forks before the end of the pipeline.
         """
 
         self.dependencies = []
@@ -208,7 +215,10 @@ class Process:
         assembly files.
         """
 
-        if ptype == "pre_assembly":
+        if ptype == "init":
+            self._main_in_str = "MAIN_raw"
+            self._main_out_str = "MAIN_raw"
+        elif ptype == "pre_assembly":
             self._main_in_str = self._main_out_str = "MAIN_fq"
         elif ptype == "assembly":
             self._main_in_str = "MAIN_fq"
@@ -408,6 +418,35 @@ class Status(Process):
             self._context = {"status_channels": s}
 
 
+class Init(Process):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(ptype="init", **kwargs)
+
+        self.input_type = None
+        self.output_type = "raw"
+
+        self.status_channels = []
+
+    def set_secondary_channel(self, source, channel_list):
+
+        logger.debug("Setting secondary channel for source '{}': {}".format(
+            source, channel_list))
+
+        if len(channel_list) == 1:
+            self.forks.append("\nIN_fastq_raw.set{{ {} }}\n".format(
+                channel_list[0]))
+        else:
+            self.forks.append("\nIN_fastq_raw.into{{ {} }}\n".format(
+                ";".join(channel_list)
+            ))
+
+        logger.debug("Setting forks attribute to: {}".format(self.forks))
+        self._context = {**self._context, **{"forks": "\n".join(self.forks)}}
+        logger.debug(self._context)
+
+
 class IntegrityCoverage(Process):
     """Process template interface for first integrity_coverage process
 
@@ -428,10 +467,15 @@ class IntegrityCoverage(Process):
         super().__init__(ptype="pre_assembly",
                          **kwargs)
 
-        self.input_type = "fastq"
+        self.input_type = "raw"
         self.output_type = "fastq"
 
+        self._main_in_str = "MAIN_raw"
+
         self.link_start.extend(["SIDE_phred", "SIDE_max_len"])
+
+        self.link_end.append({"link": "MAIN_raw",
+                              "alias": "MAIN_raw"})
 
 
 class SeqTyping(Process):
@@ -439,12 +483,21 @@ class SeqTyping(Process):
 
     """
 
-    def __int__(self, **kwargs):
+    def __init__(self, **kwargs):
 
-        self.input_type = "fastq"
+        super().__init__(ptype="pre_assembly", **kwargs)
+
+        self.input_type = "raw"
         self.output_type = None
 
         self.ignore_type = True
+        self.ignore_pid = True
+        self._main_in_str = "MAIN_raw"
+
+        self.status_channels = []
+
+        self.link_end.append({"link": "MAIN_raw",
+                              "alias": "SIDE_SeqType_raw"})
 
 
 class CheckCoverage(Process):
