@@ -129,12 +129,14 @@ class NextflowGenerator:
         logger.debug("Checking pipeline requirements for template "
                      "list: {}".format(pipeline_names))
 
-        # Check if the pipeline contains at least one integrity_coverage
-        # process
-        # if pipeline_names.index("integrity_coverage") != 0:
-        #     raise ProcessError("The pipeline must contain at least one"
-        #                        "integrity coverage at the start of the"
-        #                        "pipeline")
+        # Check if the pipeline contains at least one process with raw input
+        # type
+        raw_processes = [p for p in self.processes if p.input_type == "raw"]
+        if not raw_processes:
+            raise ProcessError("At least one process with 'raw' input type "
+                               "must be specified. Check if the "
+                               "pipeline starts with an appropriate starting"
+                               " process.")
 
         logger.debug("Checking for dependencies of templates")
 
@@ -150,7 +152,6 @@ class NextflowGenerator:
 
         logger.debug("Building header")
         self.template += hs.header + hs.start_channel
-
 
     def _set_channels(self):
         """Sets the main channels for the pipeline
