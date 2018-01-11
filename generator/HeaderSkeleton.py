@@ -30,6 +30,12 @@ IN_genome_size = Channel
 // Channel for minimum coverage threshold
 IN_min_coverage = Channel
                 .value(params.minCoverage)
+                
+// Channel for seq_typing
+IN_referenceO = Channel
+                .value(params.referenceFileO)
+IN_referenceH = Channel
+                .value(params.referenceFileH)
 
 // FASTQC CHANNELS //
 // Channel for adapters file
@@ -60,9 +66,3 @@ IN_assembly_mapping_opts = Channel
                 .value([params.minAssemblyCoverage,
                         params.AMaxContigs])
     """
-
-raw_for = """
-
-{}
-
-"""

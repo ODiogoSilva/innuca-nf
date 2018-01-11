@@ -40,6 +40,10 @@ IN_genome_size = Channel
 IN_min_coverage = Channel
                 .value(params.minCoverage)
 
+// Channel for seq_typing
+IN_referenceFiles = Channel
+                .value(params.referenceFiles)
+
 // FASTQC CHANNELS //
 // Channel for adapters file
 IN_adapters = Channel

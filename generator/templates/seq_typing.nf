@@ -9,10 +9,12 @@ process seq_typing {
 
     input:
     set fastq_id, file(fastq_pair) from SIDE_SeqType_raw_{{ pid }}
+    each refO from IN_referenceO
+    each refH from IN_referenceH
 
     script:
     """
-    echo boi
+    seq_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -r $refO $refH -o ./ -j 3 --extraSeq 0 --mapRefTogether
     """
 
 }
