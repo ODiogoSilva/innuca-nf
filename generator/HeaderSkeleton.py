@@ -37,6 +37,10 @@ IN_referenceO = Channel
 IN_referenceH = Channel
                 .value(params.referenceFileH)
 
+// Channel for patho_typing
+IN_pathoSpecies = Channel
+                .value(params.pathoSpecies)
+
 // FASTQC CHANNELS //
 // Channel for adapters file
 IN_adapters = Channel

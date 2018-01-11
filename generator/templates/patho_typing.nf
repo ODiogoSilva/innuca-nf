@@ -1,6 +1,5 @@
 
-
-process seq_typing {
+process patho_typing {
 
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
@@ -8,9 +7,8 @@ process seq_typing {
     tag { fastq_id }
 
     input:
-    set fastq_id, file(fastq_pair) from SIDE_SeqType_raw_{{ pid }}
-    each refO from IN_referenceO
-    each refH from IN_referenceH
+    set fastq_id, file(fastq_pair) from SIDE_PathoType_raw_{{ pid }}
+    val species from IN_pathoSpecies
 
     script:
     """
@@ -19,7 +17,7 @@ process seq_typing {
     cp -r /NGStools/ReMatCh rematch_temp
     export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
 
-    seq_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -r $refO $refH -o ./ -j $task.cpus --extraSeq 0 --mapRefTogether
+    patho_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -o ./ -j $task.cpus --trueCoverage --species $species
     """
 
 }

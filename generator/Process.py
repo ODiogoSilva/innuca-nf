@@ -40,6 +40,7 @@ class Process:
 
         accepted_types = [
             "init",
+            "raw",
             "pre_assembly",
             "assembly",
             "post_assembly",
@@ -218,6 +219,8 @@ class Process:
         if ptype == "init":
             self._main_in_str = "MAIN_raw"
             self._main_out_str = "MAIN_raw"
+        elif ptype == "raw":
+            self._main_in_str = self._main_out_str = "MAIN_raw"
         elif ptype == "pre_assembly":
             self._main_in_str = self._main_out_str = "MAIN_fq"
         elif ptype == "assembly":
@@ -485,19 +488,41 @@ class SeqTyping(Process):
 
     def __init__(self, **kwargs):
 
-        super().__init__(ptype="pre_assembly", **kwargs)
+        super().__init__(ptype="raw", **kwargs)
 
         self.input_type = "raw"
         self.output_type = None
 
         self.ignore_type = True
         self.ignore_pid = True
-        self._main_in_str = "MAIN_raw"
 
         self.status_channels = []
 
+        self.link_start = None
         self.link_end.append({"link": "MAIN_raw",
                               "alias": "SIDE_SeqType_raw"})
+
+
+class PathoTyping(Process):
+    """
+
+    """
+
+    def __init__(self, **kwargs):
+
+        super().__init__(ptype="raw", **kwargs)
+
+        self.input_type = "raw"
+        self.output_type = None
+
+        self.ignore_type = True
+        self.ignore_pid = True
+
+        self.status_channels = []
+
+        self.link_start = None
+        self.link_end.append({"link": "MAIN_raw",
+                              "alias": "SIDE_PathoType_raw"})
 
 
 class CheckCoverage(Process):

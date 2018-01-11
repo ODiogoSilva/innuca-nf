@@ -41,6 +41,7 @@ class NextflowGenerator:
     process_map = {
         "integrity_coverage": pc.IntegrityCoverage,
         "seq_typing": pc.SeqTyping,
+        "patho_typing": pc.PathoTyping,
         "check_coverage": pc.CheckCoverage,
         "fastqc": pc.FastQC,
         "trimmomatic": pc.Trimmomatic,
