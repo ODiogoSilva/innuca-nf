@@ -91,8 +91,6 @@ class NextflowGenerator:
         list: Stores the process interfaces in the specified order
         """
 
-        print(self.processes)
-
         self.nf_file = nextflow_file
         """
         str: Path to file where the pipeline will be generated
