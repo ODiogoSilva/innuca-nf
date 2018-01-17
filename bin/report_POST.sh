@@ -12,8 +12,8 @@ userid=$7
 task=$8
 species=$9
 
-json_str="null"
-version_str="null"
+json_str="'null'"
+version_str="'null'"
 
 # If a .report.json file was populated, set the json_str variable
 if [ -s .report.json ];
