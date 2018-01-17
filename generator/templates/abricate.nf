@@ -21,6 +21,11 @@ process abricate {
     script:
     """
     {
+        # Gather abricate version
+        abricate_version=$(abricate --version | cut -f2 -d" ")
+        echo -e "[{\"program\":\"Abricate\",\"version\":\"$abricate_version\"}]" > .versions
+
+        # Run abricate
         abricate --db $db $assembly > ${fastq_id}_abr_${db}.tsv
         echo pass > .status
     } || {
