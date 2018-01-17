@@ -36,7 +36,7 @@ then
 fi
 
 # If a .versions OR .report.json file was populated send the request
-if [ ! "$json_str" = "" ] || [ ! "$version_str" = "" ];
+if [ ! "$json_str" = "{}" ] || [ ! "$version_str" = "{}" ];
 then
     workdir=$(pwd)
     json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species', 'versions':$version_str}"
