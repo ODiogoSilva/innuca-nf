@@ -32,7 +32,7 @@ fi
 # If a .versions file was populated, set the version_str variable
 if [ -s .versions ];
 then
-    version_str=$(cat $(pwd).versions | sed 's/ /_/g' | sed s/\"/\'/g)
+    version_str=$(cat $(pwd)/.versions | sed 's/ /_/g' | sed s/\"/\'/g)
 fi
 
 # If a .versions OR .report.json file was populated send the request
