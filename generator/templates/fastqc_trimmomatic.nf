@@ -2,7 +2,9 @@
 process fastqc {
 
     // Send POST request to platform
+    {% with id_modifier=".1" %}
     {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     tag { fastq_id + " getStats" }
 
@@ -28,7 +30,9 @@ the optimal_trim information for Trimmomatic
 process fastqc_report {
 
     // Send POST request to platform
+    {% with id_modifier=".2" %}
     {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     tag { fastq_id + " getStats" }
     // This process can only use a single CPU
@@ -104,7 +108,9 @@ information on the trim_range and phred score.
 process trimmomatic {
 
     // Send POST request to platform
+    {% with id_modifier=".3" %}
     {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     tag { fastq_id + " getStats" }
 
@@ -128,7 +134,9 @@ process trimmomatic {
 
 process trimmomatic_report {
 
-    {% include "report_post.txt" ignore missing %}
+    {% with id_modifier=".4" %}
+    {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     publishDir 'reports/trimmomatic/'
 

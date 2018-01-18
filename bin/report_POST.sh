@@ -41,5 +41,10 @@ then
     workdir=$(pwd)
     json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species', 'versions':$version_str}"
     echo \"${json}\" > .final.json
-    cat .final.json | curl -H  "Content-Type: application/json" -k -L -X POST -d @- $url > /dev/null
+    {
+        cat .final.json | curl -H  "Content-Type: application/json" -k -L -X POST -d @- $url > /dev/null
+    } || {
+        echo Curl request failed
+    }
+
 fi

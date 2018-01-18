@@ -2,7 +2,9 @@
 process abricate {
 
     // Send POST request to platform
+    {% with id_modifier=".1" %}
     {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     tag { "${fastq_id} ${db}" + " getStats"}
     publishDir "results/annotation/abricate/${fastq_id}"
@@ -35,7 +37,9 @@ process abricate {
 process process_abricate {
 
     // Send POST request to platform
-    {% include "report_post.txt" ignore missing %}
+    {% with id_modifier=".2" %}
+    {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     input:
     file abricate_file from abricate_out_{{ pid }}.collect()
@@ -45,4 +49,6 @@ process process_abricate {
 
 
 }
+
+
 
