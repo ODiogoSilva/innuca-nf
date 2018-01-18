@@ -38,7 +38,7 @@ fi
 
 if [ -s .command.trace ];
 then
-    trace_str=$(cat $(pwd)/.command.trace)
+    trace_str="$(cat $(pwd)/.command.trace)"
 fi
 
 # If a .versions OR .report.json file was populated send the request
