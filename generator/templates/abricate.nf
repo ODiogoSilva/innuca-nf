@@ -4,7 +4,7 @@ process abricate {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { "${fastq_id} ${db}" }
+    tag { "${fastq_id} ${db}" + " getStats"}
     publishDir "results/annotation/abricate/${fastq_id}"
 
     input:

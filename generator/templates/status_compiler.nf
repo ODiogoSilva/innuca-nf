@@ -31,7 +31,7 @@ process compile_status {
     file fail from master_fail.collect()
 
     output:
-    set 'master_status.csv', 'master_warning.csv', 'master_fail.csv'
+    set 'master_status.csv', 'master_warning.csv', 'master_fail.csv' into mockChannel
 
     """
     cat $status >> master_status.csv
@@ -40,3 +40,14 @@ process compile_status {
     """
 }
 
+
+process compile_pipeline_status {
+
+    input:
+    set var from mockChannel
+    file trace_file from Channel.fromPath("${workflow.projectDir}/pipeline_stats.txt")
+
+    script:
+    template "pipeline_status.py"
+
+}

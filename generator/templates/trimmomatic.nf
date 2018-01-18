@@ -4,7 +4,7 @@ process trimmomatic {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
 
     input:
     set fastq_id, file(fastq_pair), phred from {{ input_channel }}.join(SIDE_phred_{{ pid }})

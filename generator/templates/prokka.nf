@@ -4,7 +4,7 @@ process prokka {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
     publishDir "results/annotation/prokka/${fastq_id}"
 
     input:

@@ -4,7 +4,7 @@ process fastqc {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
 
     input:
     set fastq_id, file(fastq_pair) from {{ input_channel }}
@@ -30,7 +30,7 @@ process fastqc_report {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
     // This process can only use a single CPU
     cpus 1
     publishDir 'reports/fastqc/run_1/', pattern: '*summary.txt', mode: 'copy'
@@ -106,7 +106,7 @@ process trimmomatic {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
 
     input:
     set fastq_id, file(fastq_pair), trim_range, phred from MAIN_fastqc_trim_{{ pid }}.join(SIDE_phred_{{ pid }})

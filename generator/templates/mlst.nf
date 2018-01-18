@@ -4,7 +4,7 @@ process mlst {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
     // This process can only use a single CPU
     cpus 1
 

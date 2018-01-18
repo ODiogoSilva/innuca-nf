@@ -4,7 +4,7 @@ process spades {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
     publishDir 'results/assembly/spades/', pattern: '*_spades.assembly.fasta', mode: 'copy'
 
     input:

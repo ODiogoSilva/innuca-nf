@@ -5,7 +5,7 @@ process chewbbaca {
     {% include "post.txt" ignore missing %}
 
     maxForks 1
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
     scratch true
     publishDir "results/chewbbaca/${fastq_id}"
     if (params.chewbbacaQueue != null) {
@@ -28,7 +28,7 @@ process chewbbaca {
     """
     {
         echo $assembly >> input_file.txt
-        chewBBACA.py AlleleCall -i input_file.txt -g ${params.schemaSelectedLoci} -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
+        chewBBACA.py AlleleCall -i input_file.txt -g ${params.schemaSelectedLoci} -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae" --fc
         merge_json.py chew_results/*/results*
         echo pass > .status
     } || {

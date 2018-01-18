@@ -4,7 +4,7 @@ process integrity_coverage_2 {
     // Send POST request to platform
     {% include "post.txt" ignore missing %}
 
-    tag { fastq_id }
+    tag { fastq_id + " getStats" }
     cpus 1
 
 	input:
