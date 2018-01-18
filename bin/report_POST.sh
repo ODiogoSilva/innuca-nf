@@ -14,6 +14,7 @@ species=$9
 
 json_str="{}"
 version_str="[]"
+trace_str=""
 
 # If a .report.json file was populated, set the json_str variable
 if [ -s .report.json ];
@@ -35,11 +36,16 @@ then
     version_str=$(cat $(pwd)/.versions | sed 's/ /_/g' | sed s/\"/\'/g)
 fi
 
+if [ -s .command.trace ];
+then
+    trace_str=$(cat $(pwd)/.command.trace)
+fi
+
 # If a .versions OR .report.json file was populated send the request
 if [ ! "$json_str" = "{}" ] || [ ! "$version_str" = "[]" ];
 then
     workdir=$(pwd)
-    json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species', 'versions':$version_str}"
+    json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species','versions':$version_str,'trace':$trace_str}"
     echo \"${json}\" > .final.json
     {
         cat .final.json | curl -H  "Content-Type: application/json" -k -L -X POST -d @- $url > /dev/null
