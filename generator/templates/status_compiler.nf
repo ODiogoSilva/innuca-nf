@@ -43,8 +43,11 @@ process compile_status {
 
 process compile_pipeline_status {
 
+    // Send POST request to platform
+    {% include "post.txt" ignore missing %}
+
     input:
-    set var from mockChannel
+    set var1, var2, var3 from mockChannel
     file trace_file from Channel.fromPath("${workflow.projectDir}/pipeline_stats.txt")
 
     script:
