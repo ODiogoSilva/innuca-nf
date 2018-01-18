@@ -54,7 +54,8 @@ class NextflowGenerator:
         "abricate": pc.Abricate,
         "prokka": pc.Prokka,
         "chewbbaca": pc.Chewbbaca,
-        "status_compiler": pc.StatusCompiler
+        "status_compiler": pc.StatusCompiler,
+        "trace_compiler": pc.TraceCompiler
     }
     """
     dict: Maps the process ids to the corresponding template interface class
@@ -196,6 +197,13 @@ class NextflowGenerator:
                 logger.debug("[{}] Ignoring process id increment".format(
                     p.template
                 ))
+
+            if p.ptype == "terminal":
+                # Get last main channel
+                channel_str = previous_channel._main_out_str
+                p._main_in_str = channel_str
+                p.link_end = [{"link": channel_str,
+                               "alias": channel_str}]
 
             logger.debug("[{}] Setting main channels for idx '{}'".format(
                 p.template, pidx))

@@ -45,7 +45,8 @@ class Process:
             "assembly",
             "post_assembly",
             "annotation",
-            "status"
+            "status",
+            "terminal"
         ]
         """
         list: Accepted process types
@@ -869,6 +870,17 @@ class Chewbbaca(Process):
         self.link_start = None
         self.link_end.append({"link": "MAIN_assembly",
                               "alias": "MAIN_assembly"})
+
+
+class TraceCompiler(Process):
+
+    def __init__(self, **kwargs):
+
+        super().__init__(ptype="terminal", **kwargs)
+
+        self.link_start = None
+
+        self.ignore_type = True
 
 
 class StatusCompiler(Status):
