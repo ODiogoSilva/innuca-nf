@@ -3,14 +3,59 @@
 import sys
 import json
 
-f1, f2 = sys.argv[1:]
+core_file, f1, f2 = sys.argv[1:]
 
-with open(f1) as f1h, open(f2) as f2h:
 
-    j1 = json.load(f1h)
-    j2 = json.load(f2h)
+def get_core_genes(core_file):
 
-    l = {"cagao": [j1, j2]}
+    with open(core_file) as fh:
+        core_genes = [x.strip() for x in core_file.readlines()[1:]
+                      if x.strip() != ""]
 
-    with open(".report.json", "w") as fh:
-        fh.write(json.dumps(l))
+    return core_genes
+
+
+def filter_core_genes(info_array, core_genes):
+
+    core_array = []
+
+    for gene in info_array:
+        if gene in core_genes:
+            core_array.append(gene)
+
+    return core_array
+
+
+def assess_quality(core_array, core_genes):
+
+    locus_not_found = core_array.count("LNF")
+    perc = float(locus_not_found) / float(core_genes)
+
+    # Fail sample with higher than 2% missing loci
+    with open(".status", "w") as fh:
+        if perc > 0.02:
+            fh.write("fail")
+        elif perc > 0.003:
+            fh.write("warning")
+        else:
+            fh.write("pass")
+
+
+def main():
+    core_genes = get_core_genes(core_file)
+
+    with open(f1) as f1h, open(f2) as f2h:
+
+        j1 = json.load(f1h)
+        j2 = json.load(f2h)
+
+        current_result = j1["sample_polished.assembly.fasta"]
+        assess_quality(current_result, core_genes)
+
+        l = {"cagao": [j1, j2]}
+
+        with open(".report.json", "w") as fh:
+            fh.write(json.dumps(l))
+
+
+main()
