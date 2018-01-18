@@ -36,7 +36,7 @@ process assembly_mapping {
         echo [DEBUG] COMPILING COVERAGE REPORT  >> .command.log 2>&1
         parallel -j ${task.cpus} echo -n {.} '"\t"' '&&' cut -f3 {} '|' paste -sd+ '|' bc >> coverages.tsv  ::: *.tab
         cat *.tab > coverage_per_bp.tsv
-        rm *.tab *.bam *.bai
+        rm *.tab
         if [ -f "coverages.tsv" ]
         then
             echo pass > .status
