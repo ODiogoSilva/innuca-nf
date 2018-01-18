@@ -38,14 +38,14 @@ fi
 
 if [ -s .command.trace ];
 then
-    trace_str="$(cat $(pwd)/.command.trace)"
+    trace_str="$(cat $(pwd)/.command.trace | tr "\n" ";")"
 fi
 
 # If a .versions OR .report.json file was populated send the request
 if [ ! "$json_str" = "{}" ] || [ ! "$version_str" = "[]" ] || [ ! "$trace_str" = "" ];
 then
     workdir=$(pwd)
-    json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species','versions':$version_str,'trace':$trace_str}"
+    json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species','versions':$version_str,'trace':\"$trace_str\"}"
     echo \"${json}\" > .final.json
     {
         cat .final.json | curl -H  "Content-Type: application/json" -k -L -X POST -d @- $url > /dev/null
