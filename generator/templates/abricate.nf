@@ -36,7 +36,7 @@ process process_abricate {
 
     // Send POST request to platform
     {% with overwrite="false" %}
-    {% include "post.txt" ignore missing %}
+    {% include "report_post.txt" ignore missing %}
     {% endwith %}
 
     input:
