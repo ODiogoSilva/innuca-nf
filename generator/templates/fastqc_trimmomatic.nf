@@ -13,6 +13,7 @@ process fastqc {
     output:
     set fastq_id, file(fastq_pair), file('pair_1*'), file('pair_2*') optional true into MAIN_fastqc_out_{{ pid }}
     set fastq_id, val("fastqc_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_fastqc_{{ pid }}
+    file ".report.json"
 
     when:
     params.stopAt != "fastqc"
@@ -47,6 +48,7 @@ process fastqc_report {
     set fastq_id, val("fastqc_report_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_report_{{ pid }}
     file "*_status_report" into LOG_fastqc_report_{{ pid }}
     file "${fastq_id}_*_summary.txt" optional true
+    file ".report.json"
 
     script:
     template "fastqc_report.py"
@@ -120,6 +122,7 @@ process trimmomatic {
     set fastq_id, "${fastq_id}_*P*" optional true into {{ output_channel }}
     set fastq_id, val("trimmomatic_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_trim_{{ pid }}
     file '*_trimlog.txt' optional true into LOG_trimmomatic_{{ pid }}
+    file ".report.json"
 
     when:
     params.stopAt != "trimmomatic"
@@ -143,6 +146,7 @@ process trimmomatic_report {
 
     output:
     file 'trimmomatic_report.csv'
+    file ".report.json"
 
     script:
     template "trimmomatic_report.py"

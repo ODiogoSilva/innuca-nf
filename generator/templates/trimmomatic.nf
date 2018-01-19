@@ -15,6 +15,7 @@ process trimmomatic {
     set fastq_id, "${fastq_id}_*P*" optional true into {{ output_channel }}
     set fastq_id, val("trimmomatic_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
     file '*_trimlog.txt' optional true into LOG_trimmomatic_{{ pid }}
+    file ".report.json"
 
     when:
     params.stopAt != "trimmomatic"
@@ -39,6 +40,7 @@ process trimmomatic_report {
 
     output:
     file 'trimmomatic_report.csv'
+    file ".report.json"
 
     script:
     template "trimmomatic_report.py"

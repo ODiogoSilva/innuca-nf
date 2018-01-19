@@ -18,6 +18,7 @@ process process_spades {
     set fastq_id, file('*.assembly.fasta') optional true into {{ output_channel }}
     set fastq_id, val("process_spades"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
     file '*.report.csv' optional true
+    file ".report.json"
 
     when:
     params.stopAt != "process_spades"

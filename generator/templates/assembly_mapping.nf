@@ -75,6 +75,7 @@ process process_assembly_mapping {
     output:
     set fastq_id, '*_filtered.assembly.fasta', 'filtered.bam', 'filtered.bam.bai' optional true into {{ output_channel }}
     set fastq_id, val("process_am"), file(".status"), file(".warning"), file(".fail") into STATUS_amp_{{ pid }}
+    file ".report.json"
 
     script:
     template "process_assembly_mapping.py"

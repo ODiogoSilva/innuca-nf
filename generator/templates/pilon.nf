@@ -14,6 +14,7 @@ process pilon {
     output:
     set fastq_id, '*_polished.assembly.fasta' into {{ output_channel }}, pilon_report_{{ pid }}
     set fastq_id, val("pilon"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
+    file ".report.json"
 
     script:
     """
@@ -41,6 +42,7 @@ process pilon_report {
 
     output:
     file "*_assembly_report.csv" into pilon_report_out_{{ pid }}
+    file ".report.json"
 
     script:
     template "assembly_report.py"
@@ -57,6 +59,7 @@ process compile_pilon_report {
 
     output:
     file "pilon_assembly_report.csv"
+    file ".report.json"
 
     """
     echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > pilon_assembly_report.csv
