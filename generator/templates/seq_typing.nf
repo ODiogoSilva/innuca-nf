@@ -23,7 +23,7 @@ process seq_typing {
     export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
 
     seq_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -r $refO $refH -o ./ -j $task.cpus --extraSeq 0 --mapRefTogether
-    json_str="{'typing': {'seqtyping': \$(cat seq_typing.report.txt)}}"
+    json_str="{'typing':{'seqtyping':'\$(cat seq_typing.report.txt)'}}"
     echo \$json_str > .report.json
 
     rm -r rematch_temp
