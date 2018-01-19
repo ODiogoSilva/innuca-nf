@@ -29,7 +29,13 @@ process seq_typing {
         echo \$json_str > .report.json
 
         rm -r rematch_temp
-        echo pass > .status
+
+        if [ -s seq_typing.report.txt ];
+        then
+            echo pass > .status
+        else
+            echo fail > .status
+        fi
     } || {
         echo fail > .status
     }

@@ -28,6 +28,13 @@ process patho_typing {
 
         rm -r rematch_temp
         echo pass > .status
+
+        if [ -s patho_typing.report.txt ];
+        then
+            echo pass > .status
+        else
+            echo fail > .status
+        fi
     } || {
         echo fail > .status
     }
