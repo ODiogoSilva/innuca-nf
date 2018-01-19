@@ -29,7 +29,7 @@ def filter_core_genes(info_array, core_genes):
 def assess_quality(core_array, core_genes):
 
     locus_not_found = core_array.count("LNF")
-    perc = float(locus_not_found) / float(core_genes)
+    perc = float(locus_not_found) / float(len(core_genes))
 
     # Fail sample with higher than 2% missing loci
     with open(".status", "w") as fh:
