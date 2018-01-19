@@ -33,9 +33,9 @@ IN_min_coverage = Channel
                 
 // Channel for seq_typing
 IN_referenceO = Channel
-                .value(params.referenceFileO)
+                .fromPath(params.referenceFileO)
 IN_referenceH = Channel
-                .value(params.referenceFileH)
+                .fromPath(params.referenceFileH)
 
 // Channel for patho_typing
 IN_pathoSpecies = Channel

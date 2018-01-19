@@ -10,8 +10,8 @@ process seq_typing {
 
     input:
     set fastq_id, file(fastq_pair) from SIDE_SeqType_raw_{{ pid }}
-    each refO from IN_referenceO
-    each refH from IN_referenceH
+    file refO from IN_referenceO
+    file refH from IN_referenceH
 
     output:
     file "seq_typing.report.txt"
@@ -24,7 +24,7 @@ process seq_typing {
         cp -r /NGStools/ReMatCh rematch_temp
         export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
 
-        seq_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -r $refO $refH -o ./ -j $task.cpus --extraSeq 0 --mapRefTogether
+        seq_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -r \$(pwd)/$refO \$(pwd)/$refH -o ./ -j $task.cpus --extraSeq 0 --mapRefTogether
         json_str="{'typing':{'seqtyping':'\$(cat seq_typing.report.txt)'}}"
         echo \$json_str > .report.json
 
