@@ -9,7 +9,7 @@ core_file, f1, f2 = sys.argv[1:]
 def get_core_genes(core_file):
 
     with open(core_file) as fh:
-        core_genes = [x.strip() for x in core_file.readlines()[1:]
+        core_genes = [x.strip() for x in fh.readlines()[1:]
                       if x.strip() != ""]
 
     return core_genes
