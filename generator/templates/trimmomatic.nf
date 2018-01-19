@@ -27,7 +27,10 @@ process trimmomatic {
 
 process trimmomatic_report {
 
-    {% include "report_post.txt" ignore missing %}
+    // Send POST request to platform
+    {% with overwrite="false" %}
+    {% include "post.txt" ignore missing %}
+    {% endwith %}
 
     publishDir 'reports/trimmomatic/'
 

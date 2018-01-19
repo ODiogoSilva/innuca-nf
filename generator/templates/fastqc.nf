@@ -2,9 +2,7 @@
 process fastqc2 {
 
     // Send POST request to platform
-    {% with id_modifier=".1" %}
     {% include "post.txt" ignore missing %}
-    {% endwith %}
 
     tag { fastq_id + " getStats" }
 
@@ -27,7 +25,7 @@ process fastqc2 {
 process fastqc2_report {
 
     // Send POST request to platform
-    {% with id_modifier=".2" %}
+    {% with overwrite="false" %}
     {% include "post.txt" ignore missing %}
     {% endwith %}
 

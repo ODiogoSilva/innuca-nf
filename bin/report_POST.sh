@@ -11,6 +11,7 @@ username=$6
 userid=$7
 task=$8
 species=$9
+overwrite=${10}
 
 json_str="{}"
 version_str="[]"
@@ -45,7 +46,7 @@ fi
 if [ ! "$json_str" = "{}" ] || [ ! "$version_str" = "[]" ] || [ ! "$trace_str" = "" ];
 then
     workdir=$(pwd)
-    json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species','versions':$version_str,'trace':'$trace_str'}"
+    json="{'project_id':'$projectid','pipeline_id':'$pipelineid','process_id':'$processid','sample_name':'$sample','report_json':$json_str,'current_user_name':'$username','current_user_id':'$userid','workdir':'$workdir','task':'$task','species':'$species','versions':$version_str,'trace':'$trace_str', 'overwrite': '$overwrite'}"
     echo \"${json}\" > .final.json
     {
         cat .final.json | curl -H  "Content-Type: application/json" -k -L -X POST -d @- $url > /dev/null

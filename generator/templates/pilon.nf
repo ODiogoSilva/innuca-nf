@@ -2,9 +2,7 @@
 process pilon {
 
     // Send POST request to platform
-    {% with id_modifier=".1" %}
     {% include "post.txt" ignore missing %}
-    {% endwith %}
 
     tag { fastq_id + " getStats" }
     echo false
@@ -32,7 +30,7 @@ process pilon {
 
 process pilon_report {
 
-    {% with id_modifier=".2" %}
+    {% with overwrite="false" %}
     {% include "post.txt" ignore missing %}
     {% endwith %}
 
