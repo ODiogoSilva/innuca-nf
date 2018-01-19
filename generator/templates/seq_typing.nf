@@ -12,7 +12,7 @@ process seq_typing {
     each refO from IN_referenceO
     each refH from IN_referenceH
 
-    outupt:
+    output:
     file "seq_typing.report.txt"
 
     script:
