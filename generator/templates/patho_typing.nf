@@ -5,6 +5,7 @@ process patho_typing {
     {% include "post.txt" ignore missing %}
 
     tag { fastq_id + " getStats" }
+    errorStrategy "ignore"
 
     input:
     set fastq_id, file(fastq_pair) from SIDE_PathoType_raw_{{ pid }}
