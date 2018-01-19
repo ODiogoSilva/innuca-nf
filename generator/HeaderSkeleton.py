@@ -31,11 +31,6 @@ IN_genome_size = Channel
 IN_min_coverage = Channel
                 .value(params.minCoverage)
                 
-// Channel for seq_typing
-IN_referenceO = Channel
-                .fromPath(params.referenceFileO)
-IN_referenceH = Channel
-                .fromPath(params.referenceFileH)
 
 // Channel for patho_typing
 IN_pathoSpecies = Channel
