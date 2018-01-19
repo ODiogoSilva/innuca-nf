@@ -27,8 +27,13 @@ process chewbbaca {
     script:
     """
     {
+        if [ -d ${params.schemaPath}/temp ];
+        then
+            rm -r ${params.schemaPath}/temp
+        fi
+
         echo $assembly >> input_file.txt
-        chewBBACA.py AlleleCall -i input_file.txt -g ${params.schemaSelectedLoci} -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae" --fr
+        chewBBACA.py AlleleCall -i input_file.txt -g ${params.schemaSelectedLoci} -o chew_results --json --cpu $task.cpus -t "Streptococcus agalactiae"
         merge_json.py ${params.schemaCore} chew_results/*/results*
         echo pass > .status
     } || {
