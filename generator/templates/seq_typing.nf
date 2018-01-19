@@ -22,7 +22,7 @@ process seq_typing {
     cp -r /NGStools/ReMatCh rematch_temp
     export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
 
-    seq_typing.py -f ${fastq_pair[echo 0]} ${fastq_pair[1]} -r $refO $refH -o ./ -j $task.cpus --extraSeq 0 --mapRefTogether
+    seq_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -r $refO $refH -o ./ -j $task.cpus --extraSeq 0 --mapRefTogether
     json_str="{'typing': {'seqtyping': $(cat seq_typing.report.txt)}}"
     echo $json_str > .report.json
 
