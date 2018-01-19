@@ -13,12 +13,17 @@ process patho_typing {
 
     script:
     """
-    # Prevents read-only issues
-    mkdir rematch_temp
-    cp -r /NGStools/ReMatCh rematch_temp
-    export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
+    {
+        # Prevents read-only issues
+        mkdir rematch_temp
+        cp -r /NGStools/ReMatCh rematch_temp
+        export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
 
-    patho_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -o ./ -j $task.cpus --trueCoverage --species $species
+        patho_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -o ./ -j $task.cpus --trueCoverage --species $species
+        echo pass > .status
+    } || {
+        echo fail > .status
+    }
     """
 
 }
