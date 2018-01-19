@@ -11,6 +11,9 @@ process patho_typing {
     set fastq_id, file(fastq_pair) from SIDE_PathoType_raw_{{ pid }}
     val species from IN_pathoSpecies
 
+    output:
+    file "patho_typing.report.txt"
+
     script:
     """
     {
@@ -19,7 +22,11 @@ process patho_typing {
         cp -r /NGStools/ReMatCh rematch_temp
         export PATH="\$(pwd)/rematch_temp/ReMatCh:\$PATH"
 
-        patho_typing.py -f ${fastq_pair[0]} ${fastq_pair[1]} -o ./ -j $task.cpus --trueCoverage --species $species
+        patho_typing.py -f \$(pwd)/${fastq_pair[0]} \$(pwd)/${fastq_pair[1]} -o \$(pwd) -j $task.cpus --trueCoverage --species $species
+        json_str="{'typing':{'pathotyping':'\$(cat patho_typing.report.txt)'}}"
+        echo \$json_str > .report.json
+
+        rm -r rematch_temp
         echo pass > .status
     } || {
         echo fail > .status
