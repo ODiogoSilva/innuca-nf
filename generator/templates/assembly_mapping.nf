@@ -43,6 +43,8 @@ process assembly_mapping {
         else
             echo fail > .status
         fi
+        echo -n "" > .report.json
+        echo -n "" > .versions
     } || {
         echo fail > .status
     }
