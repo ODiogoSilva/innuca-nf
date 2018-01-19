@@ -136,7 +136,7 @@ process trimmomatic {
 process trimmomatic_report {
 
     {% with overwrite="false" %}
-    {% include "report.txt" ignore missing %}
+    {% include "report_post.txt" ignore missing %}
     {% endwith %}
 
     publishDir 'reports/trimmomatic/'
