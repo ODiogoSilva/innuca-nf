@@ -59,7 +59,6 @@ process compile_pilon_report {
 
     output:
     file "pilon_assembly_report.csv"
-    file ".report.json"
 
     """
     echo Sample,Number of contigs,Average contig size,N50,Total assembly length,GC content,Missing data > pilon_assembly_report.csv
