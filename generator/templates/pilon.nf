@@ -31,7 +31,7 @@ process pilon {
 process pilon_report {
 
     {% with overwrite="false" %}
-    {% include "post.txt" ignore missing %}
+    {% include "report_post.txt" ignore missing %}
     {% endwith %}
 
     tag { fastq_id + " getStats" }
