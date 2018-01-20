@@ -34,11 +34,15 @@ def assess_quality(core_array, core_genes):
     # Fail sample with higher than 2% missing loci
     with open(".status", "w") as fh:
         if perc > 0.02:
-            fh.write("fail")
+            status = "fail"
         elif perc > 0.003:
-            fh.write("warning")
+            status = "warning"
         else:
-            fh.write("pass")
+            status = "pass"
+
+        fh.write(status)
+
+    return status
 
 
 def main():
@@ -50,12 +54,12 @@ def main():
         j2 = json.load(f2h)
 
         current_result = j1["sample_polished.assembly.fasta"]
-        assess_quality(current_result, core_genes)
+        status = assess_quality(current_result, core_genes)
 
-        l = {"cagao": [j1, j2]}
+        res = {"cagao": [j1, j2], "status": status}
 
         with open(".report.json", "w") as fh:
-            fh.write(json.dumps(l))
+            fh.write(json.dumps(res))
 
 
 main()
