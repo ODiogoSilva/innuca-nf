@@ -25,27 +25,5 @@ process trimmomatic {
 
 }
 
-
-//process trimmomatic_report {
-//
-//    // Send POST request to platform
-//    {% with overwrite="false" %}
-//    {% include "post.txt" ignore missing %}
-//    {% endwith %}
-//
-//    publishDir 'reports/trimmomatic/'
-//
-//    input:
-//    file log_files from LOG_trimmomatic_{{ pid }}.collect()
-//
-//    output:
-//    file 'trimmomatic_report.csv'
-//    file ".report.json"
-//
-//    script:
-//    template "trimmomatic_report.py"
-//
-//}
-
 {{ forks }}
 
