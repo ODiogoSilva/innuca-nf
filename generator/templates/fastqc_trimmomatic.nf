@@ -121,7 +121,7 @@ process trimmomatic {
     output:
     set fastq_id, "${fastq_id}_*P*" optional true into {{ output_channel }}
     set fastq_id, val("trimmomatic_{{ pid }}"), file(".status"), file(".warning"), file(".fail") into STATUS_trim_{{ pid }}
-    file '*_trimlog.txt' optional true into LOG_trimmomatic_{{ pid }}
+    file 'trimmomatic_report.csv'
     file ".report.json"
 
     when:
@@ -133,25 +133,25 @@ process trimmomatic {
 }
 
 
-process trimmomatic_report {
-
-    {% with overwrite="false" %}
-    {% include "report_post.txt" ignore missing %}
-    {% endwith %}
-
-    publishDir 'reports/trimmomatic/'
-
-    input:
-    file log_files from LOG_trimmomatic_{{ pid }}.collect()
-
-    output:
-    file 'trimmomatic_report.csv'
-    file ".report.json"
-
-    script:
-    template "trimmomatic_report.py"
-
-}
+//process trimmomatic_report {
+//
+//    {% with overwrite="false" %}
+//    {% include "report_post.txt" ignore missing %}
+//    {% endwith %}
+//
+//    publishDir 'reports/trimmomatic/'
+//
+//    input:
+//    file log_files from LOG_trimmomatic_{{ pid }}.collect()
+//
+//    output:
+//    file 'trimmomatic_report.csv'
+//    file ".report.json"
+//
+//    script:
+//    template "trimmomatic_report.py"
+//
+//}
 
 {{ forks }}
 
