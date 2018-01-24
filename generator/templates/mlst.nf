@@ -10,7 +10,7 @@ process mlst {
 
     input:
     set fastq_id, file(assembly) from {{ input_channel }}
-    val expectedSpecies from Channel.value($params.mlstSpecies)
+    val expectedSpecies from Channel.value(params.mlstSpecies)
 
     output:
     file '*.mlst.txt' into MAIN_mlst_out_{{ pid }}
