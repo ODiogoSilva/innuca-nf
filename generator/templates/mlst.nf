@@ -23,7 +23,7 @@ process mlst {
     """
     {
         mlst $assembly >> ${fastq_id}.mlst.txt
-        json_str="{'expectedSpecies':\'$expectedSpecies\', 'species': '\$(cat *.mlst.txt | cut -f2)'}"
+        json_str="{'expectedSpecies':\'$expectedSpecies\','species':'\$(cat *.mlst.txt | cut -f2)'}"
         echo \$json_str > .report.json
         echo pass > .status
     } || {
