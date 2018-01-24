@@ -10,6 +10,7 @@ process mlst {
 
     input:
     set fastq_id, file(assembly) from {{ input_channel }}
+    val expectedSpecies from Channel.value($params.mlstSpecies)
 
     output:
     file '*.mlst.txt' into MAIN_mlst_out_{{ pid }}
@@ -22,6 +23,8 @@ process mlst {
     """
     {
         mlst $assembly >> ${fastq_id}.mlst.txt
+        json_str="{'expectedSpecies':\'$expectedSpecies\', 'species': '\$(cat seq_typing.report.txt | cut -f2)'}"
+        echo \$json_str > .report.json
         echo pass > .status
     } || {
         echo fail > .status
