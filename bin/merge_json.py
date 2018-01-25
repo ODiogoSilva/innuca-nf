@@ -15,13 +15,13 @@ def get_core_genes(core_file):
     return core_genes
 
 
-def filter_core_genes(info_array, core_genes):
+def filter_core_genes(locus_array, info_array, core_genes):
 
     core_array = []
 
-    for gene in info_array:
+    for gene, info in zip(*[info_array, locus_array]):
         if gene in core_genes:
-            core_array.append(gene)
+            core_array.append(info)
 
     return core_array
 
@@ -54,7 +54,10 @@ def main():
         j2 = json.load(f2h)
 
         current_result = j1["sample_polished.assembly.fasta"]
-        status = assess_quality(current_result, core_genes)
+        current_array = j1["header"]
+        core_results = filter_core_genes(current_result, current_array,
+                                         core_genes)
+        status = assess_quality(core_results, core_genes)
 
         res = {"cagao": [j1, j2], "status": status}
 
