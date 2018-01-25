@@ -13,6 +13,7 @@ process patho_typing {
 
     output:
     file "patho_typing.report.txt"
+    file ".report.json"
 
     script:
     """
