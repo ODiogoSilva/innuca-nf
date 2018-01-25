@@ -15,7 +15,7 @@ process seq_typing {
 
     output:
     file "seq_typing.report.txt"
-    set file(".report.json"), file(."status")
+    set file(".report.json"), file(".status")
 
     script:
     """
