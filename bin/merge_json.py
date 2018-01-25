@@ -42,7 +42,7 @@ def assess_quality(core_array, core_genes):
 
         fh.write(status)
 
-    return status
+    return status, perc
 
 
 def main():
@@ -57,9 +57,9 @@ def main():
         current_array = j1["header"]
         core_results = filter_core_genes(current_result, current_array,
                                          core_genes)
-        status = assess_quality(core_results, core_genes)
+        status, perc = assess_quality(core_results, core_genes)
 
-        res = {"cagao": [j1, j2], "status": status}
+        res = {"cagao": [j1, j2], "status": status, 'lnfPercentage': perc}
 
         with open(".report.json", "w") as fh:
             fh.write(json.dumps(res))
