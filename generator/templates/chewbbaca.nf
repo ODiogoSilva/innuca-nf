@@ -6,7 +6,7 @@ process chewbbaca {
 
     maxForks 1
     tag { fastq_id + " getStats" }
-    scratch false
+    scratch true
     publishDir "results/chewbbaca/${fastq_id}"
     if (params.chewbbacaQueue != null) {
         queue '${params.chewbbacaQueue}'
