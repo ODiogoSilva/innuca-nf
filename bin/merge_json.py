@@ -53,7 +53,8 @@ def main():
         j1 = json.load(f1h)
         j2 = json.load(f2h)
 
-        current_result = j1["sample_polished.assembly.fasta"]
+        current_result = [v for k, v in j1.items()
+                          if "polished.assembly.fasta" in k][0]
         current_array = j1["header"]
         core_results = filter_core_genes(current_result, current_array,
                                          core_genes)
