@@ -28,7 +28,11 @@ def filter_core_genes(locus_array, info_array, core_genes):
 
 def assess_quality(core_array, core_genes):
 
-    locus_not_found = core_array.count("LNF")
+    # Get the total number of missing loci. The sum/map approach aggretates
+    # the sum of all possible missing loci symbols.
+    missing_loci = ["LNF", "PLOT", "NIPH", "ALM", "ASM"]
+    locus_not_found = sum(map(core_array.count, missing_loci))
+
     perc = float(locus_not_found) / float(len(core_genes))
 
     # Fail sample with higher than 2% missing loci
