@@ -13,7 +13,8 @@ process mlst {
     val expectedSpecies from Channel.value(params.mlstSpecies)
 
     output:
-    file '*.mlst.txt' into MAIN_mlst_out_{{ pid }}
+    file '*.mlst.txt' into LOG_mlst_{{ pid }}
+    set fastq_id, file(assembly), file(".status") into MAIN_mlst_out_{{ pid }}
     set fastq_id, val("mlst"), file(".status"), file(".warning"), file(".fail") into STATUS_{{ pid }}
     file ".report.json"
 
@@ -24,9 +25,17 @@ process mlst {
     """
     {
         mlst $assembly >> ${fastq_id}.mlst.txt
-        json_str="{'expectedSpecies':\'$expectedSpecies\','species':'\$(cat *.mlst.txt | cut -f2)','st':'\$(cat *.mlst.txt | cut -f3)'}"
+        mlstSpecies=\$(cat *.mlst.txt | cut -f2)
+        json_str="{'expectedSpecies':\'$expectedSpecies\','species':'\$mlstSpecies','st':'\$(cat *.mlst.txt | cut -f3)'}"
         echo \$json_str > .report.json
-        echo pass > .status
+
+        if [ ! \$mlstSpecies = $expectedSpecies ];
+        then
+            echo fail > .status
+        else
+            echo pass > .status
+        fi
+
     } || {
         echo fail > .status
     }
@@ -38,7 +47,7 @@ process compile_mlst {
     publishDir "results/annotation/mlst/"
 
     input:
-    file res from MAIN_mlst_out_{{ pid }}.collect()
+    file res from LOG_mlst_{{ pid }}.collect()
 
     output:
     file "mlst_report.tsv"
@@ -52,4 +61,12 @@ process compile_mlst {
     """
 }
 
+{{ output_channel }} = Channel.create()
+MAIN_mlst_out_{{ pid }}
+    .filter{ it[2].text != "fail" }
+    .map{ [it[0], it[1]] }
+    .set{ {{output_channel}} }
+
+
+{{ forks }}
 
