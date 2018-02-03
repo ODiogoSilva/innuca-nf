@@ -63,7 +63,7 @@ process compile_mlst {
 
 {{ output_channel }} = Channel.create()
 MAIN_mlst_out_{{ pid }}
-    .filter{ it[2].text != "fail" }
+    .filter{ it[2].text == "fail" }
     .map{ [it[0], it[1]] }
     .set{ {{output_channel}} }
 
