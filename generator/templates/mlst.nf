@@ -31,13 +31,13 @@ process mlst {
 
         if [ ! \$mlstSpecies = $expectedSpecies ];
         then
-            echo fail > .status
+            printf fail > .status
         else
-            echo pass > .status
+            printf pass > .status
         fi
 
     } || {
-        echo fail > .status
+        printf fail > .status
     }
     """
 }
@@ -63,7 +63,7 @@ process compile_mlst {
 
 {{ output_channel }} = Channel.create()
 MAIN_mlst_out_{{ pid }}
-    .filter{ it[2].text == "fail" }
+    .filter{ it[2].text != "fail" }
     .map{ [it[0], it[1]] }
     .set{ {{output_channel}} }
 
