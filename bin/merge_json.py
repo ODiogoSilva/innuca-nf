@@ -30,7 +30,7 @@ def assess_quality(core_array, core_genes):
 
     # Get the total number of missing loci. The sum/map approach aggretates
     # the sum of all possible missing loci symbols.
-    missing_loci = ["LNF", "PLOT", "NIPH", "ALM", "ASM"]
+    missing_loci = ["LNF", "PLOT3", "PLOT5", "NIPH", "ALM", "ASM"]
     locus_not_found = sum(map(core_array.count, missing_loci))
 
     perc = float(locus_not_found) / float(len(core_genes))
